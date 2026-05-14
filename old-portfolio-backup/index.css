@@ -1,0 +1,450 @@
+*{
+    margin: 0;
+    font-family: Itim-Regular;
+    
+    
+}
+@font-face {
+    font-family:  'Itim-Regular';
+    src: url('Itim/Itim-Regular.ttf');
+}
+.home{
+    background-color: black;
+    height: 753px;
+    width: 100%;
+    position: relative;
+    top: -170px;
+}
+nav{
+    background-color: rgba(000,000,000,0.7);
+    height: 70px;
+    width: 100%;
+    color: white;
+    min-width: 1000px;
+    position: fixed;
+}
+nav a{
+    position: relative;
+    top: 7px;
+    left: 210px;
+    color: crimson;
+    font-size: 40px;
+    text-decoration: none;
+    font-weight: 700;
+    display: block;
+}
+nav span{
+    color: white;
+}
+nav ul{
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+    justify-content: center;
+    
+}
+nav ul li a{
+    color: white;
+    font-size: 18px;
+    padding-left: 40px;
+    position: relative;
+    top: -27px;
+    font-weight: 500;
+    text-transform: uppercase;
+    
+    
+}
+nav ul li a:hover{
+    color: crimson;
+}
+.home .line1{
+    color: white;
+    font-size: 27px;
+    margin-left: 210px;
+    margin-top: 170px;
+    word-spacing: 5px;
+    letter-spacing: 1px;
+    padding-top: 210px;
+}
+.home .line2{
+    color: white;
+    font-size: 60px;
+    font-weight: 800;
+    margin-left: 210px;
+    line-height: 10px;
+    word-spacing: 5px;
+    letter-spacing: 1px;
+    margin-top: 29px;
+}
+.home .line3{
+    color: white;
+    font-size: 38px;
+    margin-left: 210px;
+    line-height: 70px;
+    word-spacing: 5px;
+    letter-spacing: 1px;
+    margin-top: 29px;
+    display: flex;
+}
+.bu1{
+    font-size: 33px;
+    color: white;
+    background-color: crimson;
+    transition: all 0.3s;
+    border-radius: 13px;
+    position: relative;
+    left: 210px;
+    top: 30px;
+    height: 60px;
+    width: 160px;
+}
+.bu1:hover{
+    transform: translatey(-10px);
+    background-color: inherit;
+    border: 2px solid crimson;
+    color: white;
+}
+.auto{
+    color: crimson;
+    font-size: 50px;
+    padding-left: 15px;
+    font-weight: 500;
+    letter-spacing: 0px;
+    caret-color: crimson;
+}
+.intro>h2{
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    
+    position: relative;
+    top: -120px;
+}
+
+.intro .te{
+    display: flex;
+    justify-content: center;
+    position: relative;
+    top: -120px;
+    font-size: 25px;
+}
+.intro span{
+    color: crimson;
+}
+.intro .profile img{
+    height: 500px;
+    width: 400px;
+    margin-left: 210px;
+    position: relative;
+    top: -40px;
+    position: static;
+}
+.intro .profile .nam{
+    color: black;
+    font-size: 25px;
+    margin-left: 5%;
+    
+    width: 35%;
+    margin-top: -3%;
+}
+.profile{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -3%;
+}
+.nam p{
+    padding-top: 20px;
+    font-size: 20px;
+}
+.nam .bu2{
+    width: 35%;
+    background-color: crimson;
+    color: white;
+    height: 45px;
+    font-size: 26px;
+    font-weight: 500;
+    border-radius: 6px;
+    margin-top: 4%;
+    border-color: crimson;
+    
+}
+.bu2:hover{
+    transform: translatey(-10px);
+    background-color: inherit;
+    border: 2px solid crimson;
+    color: crimson;
+}
+
+.third{
+    background-color: black;
+    width: 100%;
+    height: 700px;
+    min-height: 500px;
+    margin-top: 70px;
+}
+.third>h2{
+    color: white;
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    padding-top: 6%;
+}
+.third span{
+    color: crimson;
+}
+.te1{
+    font-size: 25px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    line-height: 40px;
+}
+.tab{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    justify-content: space-evenly;
+}
+.tab .fot{
+    background-color: rgb(36, 35, 35);
+    height: 366px;
+    width: 22%;
+    margin-top: 4%;
+    border-radius: 9px;
+    box-shadow: 10px 10px 24px crimson;
+}
+.tab .fot i{
+    color: crimson;
+    font-size: 55px;
+    display: flex;
+    justify-content: center;
+    padding-top: 10%;
+
+}
+.web{
+    text-align: center;
+    font-size: 30px;
+    font-weight: 500;
+    color: white;
+    margin: 10px 0;
+}
+.fot p{
+    color: white;
+    text-align: center;
+    font-size: 20px;
+    padding: 0px 35px;
+    font-weight: 400;
+}
+.fot:hover{
+    background-color: crimson;
+    
+}
+.fot i:hover{
+    color: white;
+}
+.fourth>h2{
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    
+    position: relative;
+    top: 60px;
+}
+
+.fourth .te{
+    display: flex;
+    justify-content: center;
+    position: relative;
+    top: 60px;
+    font-size: 25px;
+}
+.fourth span{
+    color: crimson;
+}
+.para{
+    margin-left: 210px;
+    width: 30%;
+    top: 120px;
+    position: relative;
+}
+.para p{
+    line-height: 26px;
+    font-size: 18px;
+    padding-top: 17px;
+    font-weight: 100;
+}
+.para button{
+    background-color: crimson;
+    color: white;
+    height: 45px;
+    font-size: 20px;
+    font-weight: 100;
+    width: 33%;
+    margin-top: 5%;
+    border-radius: 6px;
+}
+.para button:hover{
+    background-color: white;
+    color: crimson;
+    border-color: crimson;
+}
+.part2{
+    width: 33%;
+    position: relative;
+    left: 49%;
+}
+.part2{
+    font-size: 22px;
+    margin-top: -7%;
+}
+.part2 span{
+    padding-left: 80%;
+}
+.progress_line{
+    height: 5px;
+    width: 100%;
+    background-color: rgb(235, 233, 233);
+    position: relative;
+}
+.progress_line span{
+    background-color: crimson;
+    width: 11%;
+    height: 100%;
+    position: absolute;
+}
+.part2_ii{
+    margin: 30px 0;
+}
+.part2_ii span{
+    padding-left: 83%;
+}
+.progress_line2{
+    height: 5px;
+    width: 100%;
+    background-color: rgb(235, 233, 233);
+    position: relative;
+}
+.progress_line2 span{
+    background-color: crimson;
+    width: 0%;
+    height: 100%;
+    position: absolute;
+}
+.part2_iii{
+    margin: 30px 0;
+}
+.part2_iii span{
+    padding-left: 71%;
+}
+.end{
+    height: 680px;
+}
+.fifth>h2{
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    
+    
+}
+
+.fifth .te{
+    display: flex;
+    justify-content: center;
+    font-size: 25px;
+}
+.fifth span{
+    color: crimson;
+}
+.fifth .column1{
+    margin: 7% 14%;
+    width: 40%;
+}
+.fifth .column1 h3{
+    font-size: 22px;
+}
+.column1 .first i{
+    font-size: 33px;
+    color: crimson;
+    padding-top: 3%;
+    padding-right: 10px;
+    
+}
+
+.tabl{
+    width: 50%;
+    
+}
+.fon{
+    font-weight: bolder;
+}
+.fifth .column2{
+    margin: 7% 14%;
+    width: 40%;
+    position: relative;
+    margin-top: -19%;
+    left: 33%;
+    height: 400px;
+}
+.fifth .column2 h3{
+    font-size: 22px;
+}
+.inp{
+    height: 35px;
+    width: 90%;
+    font-size: 22px;
+    border-radius: 6px;
+    font-weight: 100;
+    box-shadow: 5px 5px 10px crimson;
+    margin-top: -5%;
+}
+.sub{
+    height: 35px;
+    width: 95%;
+    font-size: 22px;
+    border-radius: 6px;
+    font-weight: 100;
+    box-shadow: 5px 5px 10px crimson;
+    margin-top: 2%;
+}
+.typ{
+    
+    font-size: 22px;
+    border-radius: 6px;
+    font-weight: 100;
+    box-shadow: 5px 5px 10px crimson;
+    margin-top: 2%;
+    
+}
+.column2 button{
+    color: white;
+    background-color: crimson;
+    height: 45px;
+    font-size: 20px;
+    width: 154px;
+    border-radius: 6px;
+    position: relative;
+    top: 74%;
+}
+.column2 button:hover{
+    background-color: white;
+    color: crimson;
+    border-color: crimson;
+}
+.en{
+    background-color: black;
+    height: 45px;
+    width: 100%;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.en a{
+    text-decoration: none;
+    color: crimson;
+}
+.en a:hover{
+    text-decoration:underline;
+    
+}
