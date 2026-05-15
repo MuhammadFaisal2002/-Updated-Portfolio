@@ -11,6 +11,8 @@ import ParticlesBackground from '@/components/ParticlesBackground';
 import Services from '@/components/Services';
 import ScrollToTop from '@/components/ScrollToTop';
 import LoadingScreen from '@/components/LoadingScreen';
+import AIChatbot from '@/components/AIChatbot';
+import AIProjectEstimator from '@/components/AIProjectEstimator';
 
 export default function Home() {
   return (
@@ -35,6 +37,8 @@ export default function Home() {
           </footer>
         </div>
         <ScrollToTop />
+        <AIChatbot />
+        <AIProjectEstimator />
       </main>
     </>
   );
