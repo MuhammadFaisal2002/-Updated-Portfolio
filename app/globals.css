@@ -1,37 +1,65 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Itim-Regular';
+  src: url('/Itim/Itim-Regular.ttf');
+}
+
 @theme {
-  --color-background: #000000;
+  --color-background: #1a1a1a;
   --color-foreground: #ffffff;
   --color-primary: #dc143c;
   --color-primary-hover: #b01030;
-  --color-card: #111111;
-  --color-card-hover: #1a1a1a;
+  --color-card: #242424;
+  --color-card-hover: #2d2d2d;
 }
 
 :root {
-  --background: #000000;
+  --background: #1a1a1a;
   --foreground: #ffffff;
+  --card: #242424;
+  --card-hover: #2d2d2d;
+}
+
+[data-theme="light"] {
+  --background: #f8f9fa;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-hover: #f0f0f0;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Itim-Regular', Arial, Helvetica, sans-serif;
   scroll-behavior: smooth;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom scrollbar for better dark theme look */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #555555;
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #dc143c;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cccccc;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #dc143c;
+}
+
+/* Navbar light theme support */
+[data-theme="light"] nav {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
