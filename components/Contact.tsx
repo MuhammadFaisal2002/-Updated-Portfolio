@@ -1,8 +1,89 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, Phone, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import emailjs from '@emailjs/browser';
 
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const sendToGoogleSheets = async (data: typeof formData) => {
+    try {
+      // Google Sheets Web App URL (you'll add this later)
+      const GOOGLE_SHEET_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL || '';
+      
+      if (GOOGLE_SHEET_URL) {
+        await fetch(GOOGLE_SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...data,
+            timestamp: new Date().toISOString()
+          })
+        });
+      }
+    } catch (error) {
+      console.log('Google Sheets error (non-critical):', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setErrorMessage('');
+
+    try {
+      // Validate form
+      if (!formData.name || !formData.email || !formData.message) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Send email via EmailJS
+      const emailResult = await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID',
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID',
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          to_name: 'Muhammad Faisal Abshar',
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY'
+      );
+
+      // Send to Google Sheets (non-blocking)
+      sendToGoogleSheets(formData);
+
+      setStatus('success');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+
+      // Reset success message after 5 seconds
+      setTimeout(() => setStatus('idle'), 5000);
+    } catch (error: any) {
+      setStatus('error');
+      setErrorMessage(error.message || 'Failed to send message. Please try again.');
+      setTimeout(() => setStatus('idle'), 5000);
+    }
+  };
+
   return (
     <section id="contact" className="py-24" style={{ backgroundColor: 'var(--background)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,24 +144,79 @@ export default function Contact() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="w-full md:w-1/2">
-            <form className="p-8 rounded-xl border border-primary/20 space-y-6" style={{ backgroundColor: 'var(--card)' }}>
+            <form onSubmit={handleSubmit} className="p-8 rounded-xl border border-primary/20 space-y-6" style={{ backgroundColor: 'var(--card)' }}>
+              {status === 'success' && (
+                <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500">
+                  <CheckCircle size={20} />
+                  <span>Message sent successfully! I'll get back to you soon.</span>
+                </div>
+              )}
+              
+              {status === 'error' && (
+                <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500">
+                  <AlertCircle size={20} />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <input type="text" placeholder="Name" className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} />
+                  <input 
+                    type="text" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Name *" 
+                    required
+                    className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
+                    style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} 
+                  />
                 </div>
                 <div>
-                  <input type="email" placeholder="Email" className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} />
+                  <input 
+                    type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email *" 
+                    required
+                    className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
+                    style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} 
+                  />
                 </div>
               </div>
               <div>
-                <input type="text" placeholder="Subject" className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} />
+                <input 
+                  type="text" 
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="Subject" 
+                  className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
+                  style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} 
+                />
               </div>
               <div>
-                <textarea rows={5} placeholder="Message" className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}></textarea>
+                <textarea 
+                  rows={5} 
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Message *" 
+                  required
+                  className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
+                  style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
+                ></textarea>
               </div>
-              <button type="button" className="relative w-full bg-primary text-white font-medium py-4 rounded-lg transition-all flex justify-center items-center gap-2 overflow-hidden group">
+              <button 
+                type="submit" 
+                disabled={status === 'loading'}
+                className="relative w-full bg-primary text-white font-medium py-4 rounded-lg transition-all flex justify-center items-center gap-2 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <span className="absolute inset-0 bg-primary-hover transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"></span>
-                <span className="relative z-10">Send Message</span>
+                <span className="relative z-10">
+                  {status === 'loading' ? 'Sending...' : 'Send Message'}
+                </span>
               </button>
             </form>
           </motion.div>

@@ -8,26 +8,34 @@ import Projects from '@/components/Projects';
 import TechStack from '@/components/TechStack';
 import Stats from '@/components/Stats';
 import ParticlesBackground from '@/components/ParticlesBackground';
+import Services from '@/components/Services';
+import ScrollToTop from '@/components/ScrollToTop';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Home() {
   return (
-    <main className="min-h-screen relative" style={{ backgroundColor: 'var(--background)' }}>
-      <ParticlesBackground />
-      <div className="relative z-10">
-        <Navbar />
-        <Hero />
-        <Stats />
-        <About />
-        <TechStack />
-        <Experience />
-        <Skills />
-        <Projects />
-        <Contact />
-        
-        <footer className="py-8 text-center border-t border-primary/20" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}>
-          <p className="opacity-70">Created By <span className="text-primary font-medium">MF-DEVELOPER</span> &copy; {new Date().getFullYear()}</p>
-        </footer>
-      </div>
-    </main>
+    <>
+      <LoadingScreen />
+      <main className="min-h-screen relative" style={{ backgroundColor: 'var(--background)' }}>
+        <ParticlesBackground />
+        <div className="relative z-10">
+          <Navbar />
+          <Hero />
+          <Stats />
+          <About />
+          <TechStack />
+          <Services />
+          <Experience />
+          <Skills />
+          <Projects />
+          <Contact />
+          
+          <footer className="py-8 text-center border-t border-primary/20" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}>
+            <p className="opacity-70">Created By <span className="text-primary font-medium">MF-DEVELOPER</span> &copy; {new Date().getFullYear()}</p>
+          </footer>
+        </div>
+        <ScrollToTop />
+      </main>
+    </>
   );
 }
