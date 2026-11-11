@@ -29,7 +29,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <div className="shrink-0">
-            <Link href="#" className="text-xl md:text-2xl font-bold tracking-tighter">
+            <Link href="#" data-splash-target className="text-xl md:text-2xl font-bold tracking-tighter">
               <span className="text-primary">MF</span> <span style={{ color: 'var(--foreground)' }}>DEVELOPER.</span>
             </Link>
           </div>
