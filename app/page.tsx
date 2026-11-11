@@ -8,6 +8,7 @@ import Projects from '@/components/Projects';
 import TechStack from '@/components/TechStack';
 import Stats from '@/components/Stats';
 import ParticlesBackground from '@/components/ParticlesBackground';
+import CursorSpotlight from '@/components/CursorSpotlight';
 import Services from '@/components/Services';
 import ScrollToTop from '@/components/ScrollToTop';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -22,6 +23,7 @@ export default function Home() {
       <LoadingScreen />
       <main className="min-h-screen relative">
         <ParticlesBackground />
+        <CursorSpotlight />
         <div className="relative z-10">
           <Navbar />
           <Hero />

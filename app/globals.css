@@ -28,8 +28,8 @@
   /* Hero spotlight, shade behind the copy, decorative code walls */
   --spot-grid: rgba(220, 20, 60, 0.55);
   --spot-glow: rgba(220, 20, 60, 0.22);
-  --code-wall-fg: rgba(255, 255, 255, 0.16);
-  --code-wall-kw: rgba(255, 59, 92, 0.6);
+  --code-wall-fg: rgba(255, 255, 255, 0.34);
+  --code-wall-kw: rgba(255, 59, 92, 0.9);
 }
 
 [data-theme="light"] {
@@ -41,10 +41,10 @@
   --grid-line: rgba(0, 0, 0, 0.08);
   --grid-line-dense: rgba(220, 20, 60, 0.14);
   --grid-glow: rgba(220, 20, 60, 0.08);
-  --spot-grid: rgba(220, 20, 60, 0.4);
-  --spot-glow: rgba(220, 20, 60, 0.14);
-  --code-wall-fg: rgba(0, 0, 0, 0.18);
-  --code-wall-kw: rgba(176, 16, 48, 0.6);
+  --spot-grid: rgba(220, 20, 60, 0.35);
+  --spot-glow: rgba(220, 20, 60, 0.12);
+  --code-wall-fg: rgba(0, 0, 0, 0.42);
+  --code-wall-kw: rgba(176, 16, 48, 0.9);
 }
 
 /* Site-wide structural grid: fixed layer under everything plus a faint
@@ -81,33 +81,45 @@ section[id] {
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
 }
 
-/* Hero: cursor-following crimson spotlight that reveals a tight grid.
-   --mx/--my are set by HeroSpotlight; the defaults sit on the graph side. */
-.hero-spot {
-  --mx: 72%;
-  --my: 45%;
-  opacity: 0.6;
+/* Site-wide cursor spotlight: fixed, click-through, above section
+   backgrounds but below the navbar and floating buttons. --mx/--my are set
+   by CursorSpotlight; the defaults sit on the right for touch devices.
+   The revealed grid uses the same 80px pitch as the body grid, and the layer
+   blends so it lights up dark surfaces and tints light ones instead of
+   covering content. */
+.cursor-spot {
+  --mx: 72vw;
+  --my: 45vh;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.7;
   transition: opacity 0.5s ease;
+  mix-blend-mode: screen;
 }
-.hero-spot.is-active {
+[data-theme="light"] .cursor-spot {
+  mix-blend-mode: multiply;
+}
+.cursor-spot.is-active {
   opacity: 1;
 }
-.hero-spot::before,
-.hero-spot::after {
+.cursor-spot::before,
+.cursor-spot::after {
   content: '';
   position: absolute;
   inset: 0;
 }
-.hero-spot::before {
+.cursor-spot::before {
   background-image:
     linear-gradient(var(--spot-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--spot-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(260px circle at var(--mx) var(--my), black 0%, transparent 100%);
-  -webkit-mask-image: radial-gradient(260px circle at var(--mx) var(--my), black 0%, transparent 100%);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(300px circle at var(--mx) var(--my), black 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(300px circle at var(--mx) var(--my), black 0%, transparent 100%);
 }
-.hero-spot::after {
-  background: radial-gradient(440px circle at var(--mx) var(--my), var(--spot-glow), transparent 70%);
+.cursor-spot::after {
+  background: radial-gradient(520px circle at var(--mx) var(--my), var(--spot-glow), transparent 70%);
 }
 
 /* Decorative scrolling code wall behind About and Skills */
@@ -159,7 +171,7 @@ section[id] {
 }
 @media (prefers-reduced-motion: reduce) {
   .code-wall pre { animation: none; }
-  .hero-spot { transition: none; }
+  .cursor-spot { transition: none; }
 }
 
 /* Custom scrollbar */

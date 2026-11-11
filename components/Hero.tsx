@@ -6,7 +6,6 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Component, type ReactNode, useEffect, useRef } from 'react';
 import Typed from 'typed.js';
-import HeroSpotlight from './HeroSpotlight';
 
 // Load the Three.js scene on the client only; the grid motif shows underneath meanwhile.
 const HeroScene = dynamic(() => import('./3d/HeroScene'), { ssr: false, loading: () => null });
@@ -60,9 +59,6 @@ export default function Hero() {
           <HeroScene />
         </SceneBoundary>
       </div>
-
-      {/* Cursor-following crimson spotlight that reveals the grid */}
-      <HeroSpotlight />
 
 
       {/* pointer-events-none here so hover reaches the graph nodes; buttons re-enable it */}
