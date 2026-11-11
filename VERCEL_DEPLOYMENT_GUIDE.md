@@ -76,8 +76,8 @@ NEXT_PUBLIC_GOOGLE_SHEET_URL=https://script.google.com/macros/s/your_deployment_
 
 # Google Gemini AI (Add your key!)
 GEMINI_API_KEY=your_gemini_api_key_here
-# Optional: override the model (defaults to gemini-2.5-flash)
-# GEMINI_MODEL=gemini-2.5-flash
+# Optional: override the model (defaults to gemini-3.8-flash)
+# GEMINI_MODEL=gemini-3.8-flash
 ```
 
 ### **How to Add Environment Variables:**
