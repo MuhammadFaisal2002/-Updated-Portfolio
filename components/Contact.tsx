@@ -1,17 +1,18 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Phone, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
+import ContactFormCard, { type ContactFormData, type ContactStatus } from './ContactFormCard';
 
 export default function Contact() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     subject: '',
     message: ''
   });
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<ContactStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -143,83 +144,14 @@ export default function Contact() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="w-full md:w-1/2">
-            <form onSubmit={handleSubmit} className="p-8 rounded-xl border border-primary/20 space-y-6" style={{ backgroundColor: 'var(--card)' }}>
-              {status === 'success' && (
-                <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500">
-                  <CheckCircle size={20} />
-                  <span>Message sent successfully! I&apos;ll get back to you soon.</span>
-                </div>
-              )}
-              
-              {status === 'error' && (
-                <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500">
-                  <AlertCircle size={20} />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <input 
-                    type="text" 
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Name *" 
-                    required
-                    className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
-                    style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} 
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="email" 
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email *" 
-                    required
-                    className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
-                    style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} 
-                  />
-                </div>
-              </div>
-              <div>
-                <input 
-                  type="text" 
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  placeholder="Subject" 
-                  className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
-                  style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }} 
-                />
-              </div>
-              <div>
-                <textarea 
-                  rows={5} 
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Message *" 
-                  required
-                  className="w-full border border-primary/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors" 
-                  style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
-                ></textarea>
-              </div>
-              <button 
-                type="submit" 
-                disabled={status === 'loading'}
-                className="relative w-full bg-primary text-white font-medium py-4 rounded-lg transition-all flex justify-center items-center gap-2 overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="absolute inset-0 bg-primary-hover transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out"></span>
-                <span className="relative z-10">
-                  {status === 'loading' ? 'Sending...' : 'Send Message'}
-                </span>
-              </button>
-            </form>
-          </motion.div>
+          <ContactFormCard
+            formData={formData}
+            status={status}
+            errorMessage={errorMessage}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+            onReset={() => setStatus('idle')}
+          />
         </div>
       </div>
     </section>
