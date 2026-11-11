@@ -53,7 +53,7 @@ export default function ParticlesBackground() {
             color: theme === 'dark' ? '#dc143c' : '#dc143c',
             distance: 150,
             enable: true,
-            opacity: 0.3,
+            opacity: 0.14,
             width: 1,
           },
           move: {
@@ -71,16 +71,16 @@ export default function ParticlesBackground() {
               enable: true,
               area: 800,
             },
-            value: 80,
+            value: 40,
           },
           opacity: {
-            value: 0.5,
+            value: 0.3,
           },
           shape: {
             type: 'circle',
           },
           size: {
-            value: { min: 1, max: 3 },
+            value: { min: 1, max: 2 },
           },
         },
         detectRetina: true,

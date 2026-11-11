@@ -131,7 +131,7 @@ const TABLET: GraphConfig = {
 };
 
 const PALETTE: Record<'dark' | 'light', Palette> = {
-  dark:  { signal: '#dc143c', node: '#bdbdbd', edge: '#7a7a7a', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#bdbdbd' },
+  dark:  { signal: '#dc143c', node: '#8a8a8a', edge: '#4e4e4e', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#9a9a9a' },
   light: { signal: '#dc143c', node: '#5a5a5a', edge: '#9a9a9a', fog: '#f8f9fa', labelBg: 'rgba(248, 249, 250, 0.8)', labelFg: '#444444' },
 };
 

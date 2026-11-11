@@ -1,11 +1,38 @@
 'use client';
+
+import CodeWall from './CodeWall';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+const ABOUT_CODE = [
+  'const developer = {',
+  '  name: \'M Faisal Abshar\',',
+  '  role: \'Full Stack Developer\',',
+  '  location: \'Karachi, PK\',',
+  '  experience: \'2+ years\',',
+  '  stack: [\'Next.js\', \'Laravel\', \'TypeScript\', \'MySQL\'],',
+  '  focus: [\'EdTech\', \'Healthcare\', \'AI platforms\'],',
+  '  openTo: [\'freelance\', \'remote roles\'],',
+  '};',
+  '',
+  'export async function build(project) {',
+  '  const api = await laravel.boot(project.requirements);',
+  '  const ui = await next.render(project.design);',
+  '  const tests = await run(\'php artisan test && npm run lint\');',
+  '  return ship({ api, ui, tests, loadTime: \'-40%\' });',
+  '}',
+  '',
+  'class Engineer extends Developer {',
+  '  learn(topic) { return this.curiosity.push(topic); }',
+  '  deliver() { return this.projects.filter((p) => p.shipped); }',
+  '}',
+];
+
 export default function About() {
   return (
-    <section id="about" className="py-24" style={{ backgroundColor: 'var(--card-glass)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="py-24 relative overflow-hidden" style={{ backgroundColor: 'var(--card-glass)' }}>
+      <CodeWall lines={ABOUT_CODE} side="right" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>About Me</h2>
           <div className="flex items-center justify-center gap-4">

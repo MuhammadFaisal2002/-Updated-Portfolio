@@ -1,5 +1,35 @@
 'use client';
+
+import CodeWall from './CodeWall';
 import { motion } from 'framer-motion';
+
+const SKILLS_CODE = [
+  'import { useQuery } from \'@tanstack/react-query\';',
+  'const { data } = useQuery({ queryKey: [\'lessons\'], queryFn: fetchLessons });',
+  '',
+  'Route::middleware(\'auth:api\')->get(\'/quizzes\', [QuizController::class, \'index\']);',
+  '$users = User::with(\'roles\')->where(\'active\', true)->paginate(20);',
+  '',
+  'SELECT id, title FROM lessons WHERE published = true ORDER BY created_at DESC;',
+  '',
+  'export const useCart = create<CartState>((set) => ({',
+  '  items: [],',
+  '  add: (item) => set((s) => ({ items: [...s.items, item] })),',
+  '}));',
+  '',
+  'const socket = io(process.env.NEXT_PUBLIC_WS_URL);',
+  'socket.on(\'grade:update\', (grade) => setGrade(grade));',
+  '',
+  'await s3.putObject({ Bucket, Key: `lessons/${id}.mp4`, Body: file });',
+  '',
+  'export default async function Page({ params }) {',
+  '  const course = await getCourse(params.slug);',
+  '  return <CoursePlayer course={course} />;',
+  '}',
+  '',
+  'php artisan queue:work --tries=3 --backoff=10',
+  'npm run build && vercel --prod',
+];
 
 export default function Skills() {
   const skillCategories = [
@@ -10,8 +40,9 @@ export default function Skills() {
   ];
 
   return (
-    <section id="skills" className="py-24" style={{ backgroundColor: 'var(--card-glass)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="skills" className="py-24 relative overflow-hidden" style={{ backgroundColor: 'var(--card-glass)' }}>
+      <CodeWall lines={SKILLS_CODE} side="left" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>My Skills</h2>
           <div className="flex items-center justify-center gap-4">
