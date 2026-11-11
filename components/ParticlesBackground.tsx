@@ -47,13 +47,13 @@ export default function ParticlesBackground() {
         },
         particles: {
           color: {
-            value: theme === 'dark' ? '#dc143c' : '#dc143c',
+            value: theme === 'dark' ? '#ff3b5c' : '#b01030',
           },
           links: {
-            color: theme === 'dark' ? '#dc143c' : '#dc143c',
+            color: theme === 'dark' ? '#dc143c' : '#9c1a33',
             distance: 150,
             enable: true,
-            opacity: 0.14,
+            opacity: theme === 'dark' ? 0.45 : 0.5,
             width: 1,
           },
           move: {
@@ -71,16 +71,16 @@ export default function ParticlesBackground() {
               enable: true,
               area: 800,
             },
-            value: 40,
+            value: 70,
           },
           opacity: {
-            value: 0.3,
+            value: theme === 'dark' ? 0.7 : 0.8,
           },
           shape: {
             type: 'circle',
           },
           size: {
-            value: { min: 1, max: 2 },
+            value: { min: 1, max: 3 },
           },
         },
         detectRetina: true,

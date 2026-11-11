@@ -131,8 +131,8 @@ const TABLET: GraphConfig = {
 };
 
 const PALETTE: Record<'dark' | 'light', Palette> = {
-  dark:  { signal: '#dc143c', node: '#8a8a8a', edge: '#4e4e4e', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#9a9a9a' },
-  light: { signal: '#dc143c', node: '#5a5a5a', edge: '#9a9a9a', fog: '#f8f9fa', labelBg: 'rgba(248, 249, 250, 0.8)', labelFg: '#444444' },
+  dark:  { signal: '#dc143c', node: '#e6e6e6', edge: '#b0485c', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#d6d6d6' },
+  light: { signal: '#dc143c', node: '#2e2e2e', edge: '#8a2436', fog: '#f8f9fa', labelBg: 'rgba(248, 249, 250, 0.8)', labelFg: '#2e2e2e' },
 };
 
 const HOP_DURATION = 1.2; // seconds per edge — calm, deliberate
@@ -248,13 +248,13 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
       const mat = line.material as THREE.LineBasicMaterial;
       if (h === null) {
         mat.color.copy(cEdge);
-        mat.opacity = 0.35;
+        mat.opacity = 0.6;
       } else if (a === h || b === h) {
         mat.color.copy(cSignal);
         mat.opacity = 0.8;
       } else {
         mat.color.copy(cEdge);
-        mat.opacity = 0.12;
+        mat.opacity = 0.2;
       }
     });
 
@@ -322,7 +322,7 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
     <group ref={groupRef} position={cfg.position} rotation={animate ? [0, 0, 0] : [0.08, 0.25, 0]}>
       {edgeGeos.map((geo, i) => (
         <lineSegments key={`edge-${i}`} geometry={geo} ref={(el) => { edgeRefs.current[i] = el; }}>
-          <lineBasicMaterial color={cEdge} transparent opacity={0.35} />
+          <lineBasicMaterial color={cEdge} transparent opacity={0.6} />
         </lineSegments>
       ))}
 

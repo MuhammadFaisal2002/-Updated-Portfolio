@@ -64,8 +64,6 @@ export default function Hero() {
       {/* Cursor-following crimson spotlight that reveals the grid */}
       <HeroSpotlight />
 
-      {/* Shade behind the copy so the graph stays quiet under the text */}
-      <div className="hero-shade absolute inset-0 pointer-events-none hidden md:block" />
 
       {/* pointer-events-none here so hover reaches the graph nodes; buttons re-enable it */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
