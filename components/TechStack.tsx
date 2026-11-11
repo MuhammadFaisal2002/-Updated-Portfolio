@@ -12,7 +12,9 @@ import {
   SiMysql, 
   SiPostgresql, 
   SiPython,
-  SiGit
+  SiGit,
+  SiWordpress,
+  SiClaude
 } from 'react-icons/si';
 
 export default function TechStack() {
@@ -29,6 +31,8 @@ export default function TechStack() {
     { name: 'PostgreSQL', icon: SiPostgresql, color: '#4169E1' },
     { name: 'Python', icon: SiPython, color: '#3776AB' },
     { name: 'Git', icon: SiGit, color: '#F05032' },
+    { name: 'WordPress', icon: SiWordpress, color: '#21759B' },
+    { name: 'Claude Code', icon: SiClaude, color: '#D97757' },
   ];
 
   return (
@@ -48,7 +52,7 @@ export default function TechStack() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-6">
           {technologies.map((tech, i) => (
             <motion.div
               key={i}

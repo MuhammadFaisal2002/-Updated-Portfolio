@@ -34,9 +34,9 @@ const SKILLS_CODE = [
 export default function Skills() {
   const skillCategories = [
     { title: 'Frontend', skills: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Zustand', 'React Query'] },
-    { title: 'Backend', skills: ['Node.js', 'Laravel', 'PHP', 'RESTful API'] },
+    { title: 'Backend', skills: ['Node.js', 'Laravel', 'PHP', 'WordPress', 'RESTful API'] },
     { title: 'Database', skills: ['MySQL', 'PostgreSQL'] },
-    { title: 'Other', skills: ['Python', 'Git', 'Agile/Scrum', 'OpenAI API'] },
+    { title: 'Other', skills: ['Python', 'Git', 'Claude Code', 'Agile/Scrum', 'OpenAI API'] },
   ];
 
   return (
