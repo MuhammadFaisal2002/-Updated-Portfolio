@@ -56,7 +56,7 @@ export default function Contact() {
       }
 
       // Send email via EmailJS
-      const emailResult = await emailjs.send(
+      await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID',
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID',
         {
@@ -77,9 +77,9 @@ export default function Contact() {
 
       // Reset success message after 5 seconds
       setTimeout(() => setStatus('idle'), 5000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setStatus('error');
-      setErrorMessage(error.message || 'Failed to send message. Please try again.');
+      setErrorMessage(error instanceof Error && error.message ? error.message : 'Failed to send message. Please try again.');
       setTimeout(() => setStatus('idle'), 5000);
     }
   };
@@ -98,7 +98,7 @@ export default function Contact() {
 
         <div className="flex flex-col md:flex-row gap-12">
           <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="w-full md:w-1/2 space-y-8">
-            <h3 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Let's Connect</h3>
+            <h3 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Let&apos;s Connect</h3>
             <p className="opacity-70" style={{ color: 'var(--foreground)' }}>Feel free to reach out for collaborations, opportunities, or just to say hi.</p>
             
             <div className="space-y-6">
@@ -148,7 +148,7 @@ export default function Contact() {
               {status === 'success' && (
                 <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500">
                   <CheckCircle size={20} />
-                  <span>Message sent successfully! I'll get back to you soon.</span>
+                  <span>Message sent successfully! I&apos;ll get back to you soon.</span>
                 </div>
               )}
               

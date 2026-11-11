@@ -67,15 +67,17 @@ vercel
 
 ```env
 # EmailJS
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=service_wynatkh
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=template_8u3y15e
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=Bwo8AMXwmJubGrwwZ
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_service_id
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key
 
 # Google Sheets
-NEXT_PUBLIC_GOOGLE_SHEET_URL=https://script.google.com/macros/s/AKfycbxUnqV85f723m-nyv4ym_NVtqFM9aLvTE_braXynH7wjljqdl8gP9GGlXukVQVtzT8d/exec
+NEXT_PUBLIC_GOOGLE_SHEET_URL=https://script.google.com/macros/s/your_deployment_id/exec
 
 # Google Gemini AI (Add your key!)
 GEMINI_API_KEY=your_gemini_api_key_here
+# Optional: override the model (defaults to gemini-2.5-flash)
+# GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### **How to Add Environment Variables:**
@@ -86,7 +88,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 4. **Click:** Environment Variables
 5. **Add each variable:**
    - Name: `NEXT_PUBLIC_EMAILJS_SERVICE_ID`
-   - Value: `service_wynatkh`
+   - Value: your actual service ID from `.env.local`
    - Click "Add"
 6. **Repeat** for all variables
 7. **Redeploy** after adding variables

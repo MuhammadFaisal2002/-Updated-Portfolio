@@ -1,28 +1,12 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import Particles from 'react-tsparticles';
 import { loadSlim } from 'tsparticles-slim';
 import type { Engine } from 'tsparticles-engine';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function ParticlesBackground() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-
-  useEffect(() => {
-    const savedTheme = (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
-    setTheme(savedTheme);
-
-    const observer = new MutationObserver(() => {
-      const currentTheme = document.documentElement.getAttribute('data-theme') as 'dark' | 'light';
-      if (currentTheme) setTheme(currentTheme);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { theme } = useTheme();
 
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadSlim(engine);

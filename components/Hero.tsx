@@ -64,7 +64,7 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <h2 className="text-2xl md:text-4xl font-bold mb-8 flex items-center justify-center gap-3 opacity-80" style={{ color: 'var(--foreground)' }}>
-            I'm a <span ref={typedRef} className="text-primary"></span>
+            I&apos;m a <span ref={typedRef} className="text-primary"></span>
           </h2>
         </motion.div>
 

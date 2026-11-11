@@ -49,7 +49,7 @@ export default function Projects() {
           <h2 className="text-4xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>My Projects</h2>
           <div className="flex items-center justify-center gap-4">
             <div className="h-[1px] w-12 bg-primary"></div>
-            <span className="text-primary font-medium tracking-wider uppercase text-sm">What I've Built</span>
+            <span className="text-primary font-medium tracking-wider uppercase text-sm">What I&apos;ve Built</span>
             <div className="h-[1px] w-12 bg-primary"></div>
           </div>
         </motion.div>

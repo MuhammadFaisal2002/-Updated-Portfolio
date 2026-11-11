@@ -28,10 +28,12 @@ export default function AIChatbot() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  // Accepts an explicit message so quick-question buttons don't depend on
+  // `input` state that hasn't re-rendered yet.
+  const handleSend = async (text?: string) => {
+    const userMessage = (text ?? input).trim();
+    if (!userMessage || isLoading) return;
 
-    const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
@@ -50,7 +52,7 @@ export default function AIChatbot() {
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: "Sorry, I'm having trouble connecting right now. Please try contacting Faisal directly at faisalabshar2002@gmail.com or call 03072173457." 
@@ -118,6 +120,7 @@ export default function AIChatbot() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="hover:bg-white/20 p-2 rounded-lg transition-colors"
+                aria-label="Close chat"
               >
                 <X size={20} />
               </button>
@@ -168,10 +171,7 @@ export default function AIChatbot() {
                   {quickQuestions.map((q, i) => (
                     <button
                       key={i}
-                      onClick={() => {
-                        setInput(q);
-                        setTimeout(() => handleSend(), 100);
-                      }}
+                      onClick={() => handleSend(q)}
                       className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
                       style={{ color: 'var(--foreground)' }}
                     >
@@ -189,15 +189,16 @@ export default function AIChatbot() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   placeholder="Type your message..."
                   className="flex-1 px-4 py-2 rounded-lg border border-primary/20 focus:outline-none focus:border-primary transition-colors"
                   style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
                   disabled={isLoading}
                 />
                 <button
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   disabled={!input.trim() || isLoading}
+                  aria-label="Send message"
                   className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send size={20} />

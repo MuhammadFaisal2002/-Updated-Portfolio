@@ -3,11 +3,15 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calculator, X, Loader2, DollarSign, Clock, Code } from 'lucide-react';
 
+type EstimateResult =
+  | { error: true; message: string }
+  | { error?: false; cost: string; timeline: string; techStack: string[]; details?: string };
+
 export default function AIProjectEstimator() {
   const [isOpen, setIsOpen] = useState(false);
   const [projectDescription, setProjectDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [estimate, setEstimate] = useState<any>(null);
+  const [estimate, setEstimate] = useState<EstimateResult | null>(null);
 
   const handleEstimate = async () => {
     if (!projectDescription.trim() || isLoading) return;
@@ -22,14 +26,14 @@ export default function AIProjectEstimator() {
         body: JSON.stringify({ description: projectDescription })
       });
 
-      const data = await response.json();
-      
+      const data: EstimateResult = await response.json();
+
       if (data.error) {
-        throw new Error(data.error);
+        throw new Error(data.message);
       }
 
       setEstimate(data);
-    } catch (error) {
+    } catch {
       setEstimate({
         error: true,
         message: "Sorry, I couldn't generate an estimate. Please contact Faisal directly for a detailed quote."
@@ -89,6 +93,7 @@ export default function AIProjectEstimator() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="hover:bg-white/20 p-2 rounded-lg transition-colors"
+                aria-label="Close estimator"
               >
                 <X size={20} />
               </button>
@@ -102,7 +107,7 @@ export default function AIProjectEstimator() {
                     Describe Your Project
                   </h4>
                   <p className="text-sm opacity-70 mb-4" style={{ color: 'var(--foreground)' }}>
-                    Tell me about your project requirements, and I'll provide an instant estimate!
+                    Tell me about your project requirements, and I&apos;ll provide an instant estimate!
                   </p>
 
                   <textarea
@@ -157,7 +162,7 @@ export default function AIProjectEstimator() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  {estimate.error ? (
+                  {estimate.error === true ? (
                     <div className="text-center py-8">
                       <p className="text-red-500 mb-4">{estimate.message}</p>
                       <button

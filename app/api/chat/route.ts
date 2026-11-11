@@ -1,10 +1,59 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { genAI, GEMINI_MODEL } from '@/lib/gemini';
+import { getClientIp, isRateLimited } from '@/lib/rateLimit';
 
-// Initialize Gemini AI (FREE!)
-const genAI = process.env.GEMINI_API_KEY 
-  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  : null;
+const MAX_MESSAGE_LENGTH = 1000;
+const MAX_HISTORY = 20;
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+function isChatMessage(value: unknown): value is ChatMessage {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (v.role === 'user' || v.role === 'assistant') && typeof v.content === 'string';
+}
+
+const SYSTEM_PROMPT = `You are Faisal Abshar's AI assistant. Answer questions about him professionally and friendly.
+
+ABOUT FAISAL:
+- Full Stack Developer with 2+ years experience
+- Currently at 97 Solutions (Feb 2026 - Present)
+- Previously at 360 Xpert Solution (Feb 2025 - Jan 2026)
+- Expert in: Next.js, React, TypeScript, Laravel, MySQL, PostgreSQL
+- Location: Karachi, Pakistan
+- Email: faisalabshar2002@gmail.com
+- Phone: 03072173457
+- LinkedIn: linkedin.com/in/faisal-abshar-0057b01b1
+- GitHub: github.com/MuhammadFaisal2002
+
+PROJECTS:
+1. LearnBright (dev.learnbright.org) - EdTech platform with custom video engine
+2. HomaCare (dev.homacare.co) - Healthcare platform, multilingual
+3. SochAI (sochai.360xpertsolutions.com) - AI group chat platform
+4. Conclavity (conclavity.com) - Business web application
+
+SERVICES:
+- Full Stack Development
+- Frontend Development (React, Next.js)
+- Backend Development (Laravel, Node.js)
+- API Development
+- Database Management
+- Website Optimization
+
+ACHIEVEMENTS:
+- Reduced load times by 40%
+- Decreased bounce rate by 25%
+- Delivered 10+ successful projects
+
+EDUCATION:
+- BS Software Engineering (Sindh Madressatul Islam University, 2025-2028)
+- Web 3.0 Certification (GIAIC, 2023)
+- Web & App Development (Saylani Mass IT Training, 2022)
+
+Keep responses concise, friendly, and helpful. Use emojis appropriately. Only answer questions about Faisal, his work, and his services.`;
 
 // Knowledge base - Fallback if API not configured
 const knowledgeBase = {
@@ -137,89 +186,66 @@ function generateResponse(message: string): string {
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
-    
-    if (!message || message.trim().length === 0) {
-      return NextResponse.json({ 
-        message: "Please type a message! I'm here to help. 😊" 
+    if (isRateLimited(getClientIp(request))) {
+      return NextResponse.json(
+        { message: "You're sending messages too quickly. Please wait a minute and try again. 🙏" },
+        { status: 429 }
+      );
+    }
+
+    const body: unknown = await request.json();
+    const rawMessage = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).message : undefined;
+    const rawHistory = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).messages : undefined;
+
+    const message = typeof rawMessage === 'string' ? rawMessage.trim().slice(0, MAX_MESSAGE_LENGTH) : '';
+
+    if (message.length === 0) {
+      return NextResponse.json({
+        message: "Please type a message! I'm here to help. 😊"
       });
     }
-    
+
     // Try Gemini AI first (if API key is configured)
     if (genAI) {
       try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-        
-        const systemPrompt = `You are Faisal Abshar's AI assistant. Answer questions about him professionally and friendly.
-
-ABOUT FAISAL:
-- Full Stack Developer with 2+ years experience
-- Currently at 97 Solutions (Feb 2026 - Present)
-- Previously at 360 Xpert Solution (Feb 2025 - Jan 2026)
-- Expert in: Next.js, React, TypeScript, Laravel, MySQL, PostgreSQL
-- Location: Karachi, Pakistan
-- Email: faisalabshar2002@gmail.com
-- Phone: 03072173457
-- LinkedIn: linkedin.com/in/faisal-abshar-0057b01b1
-- GitHub: github.com/MuhammadFaisal2002
-
-PROJECTS:
-1. LearnBright (dev.learnbright.org) - EdTech platform with custom video engine
-2. HomaCare (dev.homacare.co) - Healthcare platform, multilingual
-3. SochAI (sochai.360xpertsolutions.com) - AI group chat platform
-4. Conclavity (conclavity.com) - Business web application
-
-SERVICES:
-- Full Stack Development
-- Frontend Development (React, Next.js)
-- Backend Development (Laravel, Node.js)
-- API Development
-- Database Management
-- Website Optimization
-
-ACHIEVEMENTS:
-- Reduced load times by 40%
-- Decreased bounce rate by 25%
-- Delivered 10+ successful projects
-
-EDUCATION:
-- BS Software Engineering (Sindh Madressatul Islam University, 2025-2028)
-- Web 3.0 Certification (GIAIC, 2023)
-- Web & App Development (Saylani Mass IT Training, 2022)
-
-Keep responses concise, friendly, and helpful. Use emojis appropriately.`;
-
-        const chat = model.startChat({
-          history: [
-            {
-              role: 'user',
-              parts: [{ text: systemPrompt }]
-            },
-            {
-              role: 'model',
-              parts: [{ text: 'I understand! I\'m ready to help answer questions about Faisal Abshar.' }]
-            }
-          ]
+        const model = genAI.getGenerativeModel({
+          model: GEMINI_MODEL,
+          systemInstruction: SYSTEM_PROMPT,
         });
 
+        // Use the client's prior turns so the model has conversation memory.
+        // Gemini requires history to start with a user turn, so drop the
+        // assistant greeting the widget seeds the thread with.
+        const priorTurns = Array.isArray(rawHistory) ? rawHistory.filter(isChatMessage) : [];
+        const firstUserIndex = priorTurns.findIndex((m) => m.role === 'user');
+        const history = (firstUserIndex === -1 ? [] : priorTurns.slice(firstUserIndex))
+          .slice(-MAX_HISTORY)
+          .map((m) => ({
+            role: m.role === 'user' ? ('user' as const) : ('model' as const),
+            parts: [{ text: m.content.slice(0, MAX_MESSAGE_LENGTH) }],
+          }));
+
+        const chat = model.startChat({ history });
         const result = await chat.sendMessage(message);
         const responseText = result.response.text();
-        
-        return NextResponse.json({ message: responseText });
-      } catch (aiError: any) {
+
+        if (responseText.trim().length > 0) {
+          return NextResponse.json({ message: responseText });
+        }
+      } catch (aiError: unknown) {
         console.error('Gemini AI Error:', aiError);
         // Fallback to knowledge base
       }
     }
-    
+
     // Fallback: Use knowledge base
     const responseMessage = generateResponse(message);
     return NextResponse.json({ message: responseMessage });
-    
-  } catch (error: any) {
+
+  } catch (error: unknown) {
     console.error('Chat API Error:', error);
-    return NextResponse.json({ 
-      message: "I'm having trouble right now. Please contact Faisal directly:\n📧 faisalabshar2002@gmail.com\n📱 03072173457" 
+    return NextResponse.json({
+      message: "I'm having trouble right now. Please contact Faisal directly:\n📧 faisalabshar2002@gmail.com\n📱 03072173457"
     });
   }
 }

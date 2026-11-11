@@ -1,13 +1,37 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { genAI, GEMINI_MODEL } from '@/lib/gemini';
+import { getClientIp, isRateLimited } from '@/lib/rateLimit';
 
-// Initialize Gemini AI (FREE!)
-const genAI = process.env.GEMINI_API_KEY 
-  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  : null;
+const MAX_DESCRIPTION_LENGTH = 2000;
+
+interface EstimateTemplate {
+  baseCost: [number, number];
+  baseWeeks: [number, number];
+  techStack: string[];
+  description: string;
+}
+
+export interface Estimate {
+  cost: string;
+  timeline: string;
+  techStack: string[];
+  details: string;
+}
+
+function isEstimate(value: unknown): value is Estimate {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.cost === 'string' &&
+    typeof v.timeline === 'string' &&
+    Array.isArray(v.techStack) &&
+    v.techStack.every((t) => typeof t === 'string') &&
+    typeof v.details === 'string'
+  );
+}
 
 // Smart pricing logic - Fallback if API not configured
-function generateEstimate(description: string) {
+function generateEstimate(description: string): Estimate {
   const lowerDesc = description.toLowerCase();
   
   // Keywords for different project types
@@ -55,7 +79,7 @@ function generateEstimate(description: string) {
   if (hasAPI) complexity += 0.2;
   
   // Base estimates by project type
-  const estimates: Record<string, any> = {
+  const estimates: Record<string, EstimateTemplate> = {
     landing: {
       baseCost: [500, 1000],
       baseWeeks: [1, 2],
@@ -148,7 +172,7 @@ function generateEstimate(description: string) {
   }
   details += '. ';
   
-  const features = [];
+  const features: string[] = [];
   if (hasPayment) features.push('payment integration');
   if (hasAuth) features.push('user authentication');
   if (hasAdmin) features.push('admin dashboard');
@@ -171,9 +195,18 @@ function generateEstimate(description: string) {
 
 export async function POST(request: Request) {
   try {
-    const { description } = await request.json();
-    
-    if (!description || description.trim().length < 10) {
+    if (isRateLimited(getClientIp(request))) {
+      return NextResponse.json(
+        { error: true, message: 'Too many requests. Please wait a minute and try again.' },
+        { status: 429 }
+      );
+    }
+
+    const body: unknown = await request.json();
+    const rawDescription = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).description : undefined;
+    const description = typeof rawDescription === 'string' ? rawDescription.trim().slice(0, MAX_DESCRIPTION_LENGTH) : '';
+
+    if (description.length < 10) {
       return NextResponse.json({
         error: true,
         message: 'Please provide a more detailed project description (at least 10 characters).'
@@ -183,7 +216,7 @@ export async function POST(request: Request) {
     // Try Gemini AI first (if API key is configured)
     if (genAI) {
       try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
         
         const prompt = `You are a professional web development project estimator for Faisal Abshar, a Full Stack Developer.
 
@@ -232,10 +265,12 @@ Be realistic, professional, and consider all complexity factors. Only return val
         // Extract JSON from response
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          const estimate = JSON.parse(jsonMatch[0]);
-          return NextResponse.json(estimate);
+          const parsed: unknown = JSON.parse(jsonMatch[0]);
+          if (isEstimate(parsed)) {
+            return NextResponse.json({ ...parsed, techStack: parsed.techStack.slice(0, 5) });
+          }
         }
-      } catch (aiError: any) {
+      } catch (aiError: unknown) {
         console.error('Gemini AI Error:', aiError);
         // Fallback to rule-based logic
       }
@@ -245,7 +280,7 @@ Be realistic, professional, and consider all complexity factors. Only return val
     const estimate = generateEstimate(description);
     return NextResponse.json(estimate);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Estimate API Error:', error);
     return NextResponse.json({
       error: true,
