@@ -1,37 +1,9 @@
 import { NextResponse } from 'next/server';
-import { genAI, GEMINI_MODEL } from '@/lib/gemini';
+import { genAI, GEMINI_MODELS } from '@/lib/gemini';
 import { getClientIp, isRateLimited } from '@/lib/rateLimit';
 
-const MAX_DESCRIPTION_LENGTH = 2000;
-
-interface EstimateTemplate {
-  baseCost: [number, number];
-  baseWeeks: [number, number];
-  techStack: string[];
-  description: string;
-}
-
-export interface Estimate {
-  cost: string;
-  timeline: string;
-  techStack: string[];
-  details: string;
-}
-
-function isEstimate(value: unknown): value is Estimate {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v.cost === 'string' &&
-    typeof v.timeline === 'string' &&
-    Array.isArray(v.techStack) &&
-    v.techStack.every((t) => typeof t === 'string') &&
-    typeof v.details === 'string'
-  );
-}
-
 // Smart pricing logic - Fallback if API not configured
-function generateEstimate(description: string): Estimate {
+function generateEstimate(description: string) {
   const lowerDesc = description.toLowerCase();
   
   // Keywords for different project types
@@ -79,7 +51,7 @@ function generateEstimate(description: string): Estimate {
   if (hasAPI) complexity += 0.2;
   
   // Base estimates by project type
-  const estimates: Record<string, EstimateTemplate> = {
+  const estimates: Record<string, { baseCost: [number, number]; baseWeeks: [number, number]; techStack: string[]; description: string }> = {
     landing: {
       baseCost: [500, 1000],
       baseWeeks: [1, 2],
@@ -142,7 +114,7 @@ function generateEstimate(description: string): Estimate {
     }
   };
   
-  const estimate = estimates[projectType];
+  const estimate = estimates[projectType] ?? estimates.custom!;
   
   // Apply complexity multiplier
   const minCost = Math.round(estimate.baseCost[0] * complexity);
@@ -172,7 +144,7 @@ function generateEstimate(description: string): Estimate {
   }
   details += '. ';
   
-  const features: string[] = [];
+  const features = [];
   if (hasPayment) features.push('payment integration');
   if (hasAuth) features.push('user authentication');
   if (hasAdmin) features.push('admin dashboard');
@@ -202,22 +174,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const body: unknown = await request.json();
-    const rawDescription = typeof body === 'object' && body !== null ? (body as Record<string, unknown>).description : undefined;
-    const description = typeof rawDescription === 'string' ? rawDescription.trim().slice(0, MAX_DESCRIPTION_LENGTH) : '';
+    const body = (await request.json()) as { description?: unknown };
+    const raw = typeof body.description === 'string' ? body.description.trim() : '';
 
-    if (description.length < 10) {
+    if (raw.length < 10) {
       return NextResponse.json({
         error: true,
         message: 'Please provide a more detailed project description (at least 10 characters).'
       });
     }
-    
+
+    const description = raw.slice(0, 2000);
+
     // Try Gemini AI first (if API key is configured)
     if (genAI) {
-      try {
-        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-        
         const prompt = `You are a professional web development project estimator for Faisal Abshar, a Full Stack Developer.
 
 PRICING GUIDELINES:
@@ -259,28 +229,37 @@ Analyze this project and provide a JSON response with:
 
 Be realistic, professional, and consider all complexity factors. Only return valid JSON, nothing else.`;
 
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
-        
-        // Extract JSON from response
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed: unknown = JSON.parse(jsonMatch[0]);
-          if (isEstimate(parsed)) {
-            return NextResponse.json({ ...parsed, techStack: parsed.techStack.slice(0, 5) });
+        for (const modelName of GEMINI_MODELS) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const responseText = result.response.text();
+
+            // Extract JSON from response
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const estimate = JSON.parse(jsonMatch[0]) as { cost?: unknown; timeline?: unknown; techStack?: unknown; details?: unknown };
+              if (typeof estimate.cost === 'string' && typeof estimate.timeline === 'string') {
+                return NextResponse.json({
+                  cost: estimate.cost,
+                  timeline: estimate.timeline,
+                  techStack: Array.isArray(estimate.techStack) ? estimate.techStack.filter((t) => typeof t === 'string').slice(0, 6) : [],
+                  details: typeof estimate.details === 'string' ? estimate.details : '',
+                });
+              }
+            }
+          } catch (aiError) {
+            console.error(`Gemini (${modelName}) error:`, aiError instanceof Error ? aiError.message : aiError);
+            // Try the next model, then fall back to rule-based logic
           }
         }
-      } catch (aiError: unknown) {
-        console.error('Gemini AI Error:', aiError);
-        // Fallback to rule-based logic
-      }
     }
-    
+
     // Fallback: Use rule-based logic
     const estimate = generateEstimate(description);
     return NextResponse.json(estimate);
-    
-  } catch (error: unknown) {
+
+  } catch (error) {
     console.error('Estimate API Error:', error);
     return NextResponse.json({
       error: true,

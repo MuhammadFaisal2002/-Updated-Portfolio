@@ -3,10 +3,10 @@ import { useCallback } from 'react';
 import Particles from 'react-tsparticles';
 import { loadSlim } from 'tsparticles-slim';
 import type { Engine } from 'tsparticles-engine';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '@/lib/useTheme';
 
 export default function ParticlesBackground() {
-  const { theme } = useTheme();
+  const theme = useTheme();
 
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadSlim(engine);

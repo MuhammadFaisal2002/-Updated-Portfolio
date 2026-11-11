@@ -8,7 +8,7 @@ import ThemeToggle from './ThemeToggle';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const navItems = ['Home', 'About', 'Services', 'Experience', 'Skills', 'Projects', 'Contact'];
+  const navItems = ['Home', 'About', 'Services', 'Experience', 'Skills', 'Projects', 'GitHub', 'Contact'];
 
   const handleNavClick = () => {
     setIsOpen(false);

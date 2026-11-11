@@ -13,12 +13,14 @@ import ScrollToTop from '@/components/ScrollToTop';
 import LoadingScreen from '@/components/LoadingScreen';
 import AIChatbot from '@/components/AIChatbot';
 import AIProjectEstimator from '@/components/AIProjectEstimator';
+import VoiceAssistant from '@/components/VoiceAssistant';
+import GitHubSection from '@/components/GitHub';
 
 export default function Home() {
   return (
     <>
       <LoadingScreen />
-      <main className="min-h-screen relative" style={{ backgroundColor: 'var(--background)' }}>
+      <main className="min-h-screen relative">
         <ParticlesBackground />
         <div className="relative z-10">
           <Navbar />
@@ -30,15 +32,17 @@ export default function Home() {
           <Experience />
           <Skills />
           <Projects />
+          <GitHubSection />
           <Contact />
-          
-          <footer className="py-8 text-center border-t border-primary/20" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}>
+
+          <footer className="py-8 text-center border-t border-primary/20" style={{ backgroundColor: 'var(--card-glass)', color: 'var(--foreground)' }}>
             <p className="opacity-70">Created By <span className="text-primary font-medium">MF-DEVELOPER</span> &copy; {new Date().getFullYear()}</p>
           </footer>
         </div>
         <ScrollToTop />
         <AIChatbot />
         <AIProjectEstimator />
+        <VoiceAssistant />
       </main>
     </>
   );

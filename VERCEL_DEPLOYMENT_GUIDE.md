@@ -78,6 +78,14 @@ NEXT_PUBLIC_GOOGLE_SHEET_URL=https://script.google.com/macros/s/your_deployment_
 GEMINI_API_KEY=your_gemini_api_key_here
 # Optional: override the model (defaults to gemini-3.8-flash)
 # GEMINI_MODEL=gemini-3.8-flash
+
+# GitHub activity section (token raises the API rate limit; username defaults to MuhammadFaisal2002)
+GITHUB_TOKEN=your_github_token
+# GITHUB_USERNAME=MuhammadFaisal2002
+
+# ElevenLabs voice assistant (see docs/elevenlabs-agent.md)
+ELEVENLABS_AGENT_ID=your_agent_id
+ELEVENLABS_API_KEY=your_elevenlabs_api_key
 ```
 
 ### **How to Add Environment Variables:**
