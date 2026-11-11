@@ -19,6 +19,12 @@
   --foreground: #ffffff;
   --card: #242424;
   --card-hover: #2d2d2d;
+  /* Translucent card so the structural grid shows through section backgrounds */
+  --card-glass: rgba(36, 36, 36, 0.78);
+  /* Structural grid */
+  --grid-line: rgba(255, 255, 255, 0.045);
+  --grid-line-dense: rgba(255, 255, 255, 0.06);
+  --grid-glow: rgba(220, 20, 60, 0.14);
 }
 
 [data-theme="light"] {
@@ -26,14 +32,44 @@
   --foreground: #1a1a1a;
   --card: #ffffff;
   --card-hover: #f0f0f0;
+  --card-glass: rgba(255, 255, 255, 0.8);
+  --grid-line: rgba(0, 0, 0, 0.06);
+  --grid-line-dense: rgba(0, 0, 0, 0.07);
+  --grid-glow: rgba(220, 20, 60, 0.08);
 }
 
+/* Site-wide structural grid: fixed layer under everything plus a faint
+   crimson radial glow top-right. Sections stay transparent so it shows through. */
 body {
   background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 60% 50% at 85% 0%, var(--grid-glow), transparent 60%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 100% 100%, 80px 80px, 80px 80px;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: 'Itim-Regular', Arial, Helvetica, sans-serif;
   scroll-behavior: smooth;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html {
+  scroll-padding-top: 5.5rem;
+}
+
+section[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Denser grid used inside the hero on top of the body grid */
+.grid-motif {
+  background-image:
+    linear-gradient(var(--grid-line-dense) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-dense) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.5;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
 }
 
 /* Custom scrollbar */
@@ -62,4 +98,9 @@ body {
 [data-theme="light"] nav {
   background-color: rgba(255, 255, 255, 0.7) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+::selection {
+  background-color: #dc143c;
+  color: #ffffff;
 }

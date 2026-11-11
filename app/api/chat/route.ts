@@ -135,21 +135,53 @@ function generateResponse(message: string): string {
   return "I can help you with information about:\n\n💼 Experience & Skills\n🚀 Projects (LearnBright, HomaCare, SochAI, Conclavity)\n🛠️ Services Offered\n📞 Contact Information\n💰 Pricing & Availability\n🎓 Education & Certifications\n\nWhat would you like to know? Or feel free to contact Faisal directly:\n📧 faisalabshar2002@gmail.com\n📱 03072173457";
 }
 
+// Models to try in order. `gemini-pro` was retired; these are current and work with
+// free AI Studio keys. Override with GEMINI_MODEL in .env.local.
+const MODELS = [
+  ...(process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []),
+  'gemini-3.5-flash-lite',
+  'gemini-3.8-flash',
+];
+
+interface ClientMessage { role: 'user' | 'assistant'; content: string }
+type GeminiRole = 'user' | 'model';
+
+// Convert chat history into Gemini format: must start with a user turn and alternate roles.
+function toGeminiHistory(messages: unknown, currentMessage: string) {
+  if (!Array.isArray(messages)) return [];
+  const clean = (messages as ClientMessage[])
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .slice(-12);
+  // Drop a trailing copy of the current message if the client included it
+  if (clean.length && clean[clean.length - 1]!.role === 'user' && clean[clean.length - 1]!.content.trim() === currentMessage) clean.pop();
+  const history: { role: GeminiRole; parts: { text: string }[] }[] = [];
+  for (const m of clean) {
+    const role: GeminiRole = m.role === 'user' ? 'user' : 'model';
+    if (history.length === 0 && role === 'model') continue;
+    const last = history[history.length - 1];
+    if (last && last.role === role) last.parts[0]!.text += `\n${m.content.trim()}`;
+    else history.push({ role, parts: [{ text: m.content.trim().slice(0, 1500) }] });
+  }
+  // History must end with a model turn so the next user message alternates correctly
+  if (history.length && history[history.length - 1]!.role === 'user') history.pop();
+  return history;
+}
+
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
-    
-    if (!message || message.trim().length === 0) {
-      return NextResponse.json({ 
-        message: "Please type a message! I'm here to help. 😊" 
+    const body = (await request.json()) as { message?: unknown; messages?: unknown };
+    const raw = typeof body.message === 'string' ? body.message.trim() : '';
+
+    if (!raw) {
+      return NextResponse.json({
+        message: "Please type a message! I'm here to help. 😊"
       });
     }
-    
+
+    const message = raw.slice(0, 1000);
+
     // Try Gemini AI first (if API key is configured)
     if (genAI) {
-      try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-        
         const systemPrompt = `You are Faisal Abshar's AI assistant. Answer questions about him professionally and friendly.
 
 ABOUT FAISAL:
@@ -187,36 +219,29 @@ EDUCATION:
 - Web 3.0 Certification (GIAIC, 2023)
 - Web & App Development (Saylani Mass IT Training, 2022)
 
-Keep responses concise, friendly, and helpful. Use emojis appropriately.`;
+Keep responses concise (2-5 short sentences unless asked for detail), friendly, and helpful. Use emojis sparingly. Only state facts listed above; if unsure, suggest contacting Faisal directly.`;
 
-        const chat = model.startChat({
-          history: [
-            {
-              role: 'user',
-              parts: [{ text: systemPrompt }]
-            },
-            {
-              role: 'model',
-              parts: [{ text: 'I understand! I\'m ready to help answer questions about Faisal Abshar.' }]
-            }
-          ]
-        });
+        const history = toGeminiHistory(body.messages, message);
 
-        const result = await chat.sendMessage(message);
-        const responseText = result.response.text();
-        
-        return NextResponse.json({ message: responseText });
-      } catch (aiError: any) {
-        console.error('Gemini AI Error:', aiError);
-        // Fallback to knowledge base
-      }
+        for (const modelName of MODELS) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt });
+            const chat = model.startChat({ history });
+            const result = await chat.sendMessage(message);
+            const responseText = result.response.text().trim();
+            if (responseText) return NextResponse.json({ message: responseText });
+          } catch (aiError) {
+            console.error(`Gemini (${modelName}) error:`, aiError instanceof Error ? aiError.message : aiError);
+            // Try the next model, then fall back to the knowledge base
+          }
+        }
     }
-    
+
     // Fallback: Use knowledge base
     const responseMessage = generateResponse(message);
     return NextResponse.json({ message: responseMessage });
-    
-  } catch (error: any) {
+
+  } catch (error) {
     console.error('Chat API Error:', error);
     return NextResponse.json({ 
       message: "I'm having trouble right now. Please contact Faisal directly:\n📧 faisalabshar2002@gmail.com\n📱 03072173457" 

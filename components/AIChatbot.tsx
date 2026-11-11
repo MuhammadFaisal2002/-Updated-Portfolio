@@ -189,7 +189,7 @@ export default function AIChatbot() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   placeholder="Type your message..."
                   className="flex-1 px-4 py-2 rounded-lg border border-primary/20 focus:outline-none focus:border-primary transition-colors"
                   style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
