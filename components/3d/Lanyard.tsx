@@ -186,11 +186,24 @@ function Band({ layout, textures, theme, onReady }: { layout: Layout; textures: 
   const smoothed = useRef(new Map<RapierRigidBody, THREE.Vector3>());
 
   const scratch = useMemo(
-    () => ({ vec: new THREE.Vector3(), dir: new THREE.Vector3(), ang: new THREE.Vector3(), rot: new THREE.Vector3() }),
+    () => ({
+      vec: new THREE.Vector3(),
+      dir: new THREE.Vector3(),
+      ang: new THREE.Vector3(),
+      rot: new THREE.Vector3(),
+      quat: new THREE.Quaternion(),
+    }),
     [],
   );
   const curve = useMemo(() => {
-    const c = new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
+    // clasp end, a guide just above the clasp, the two smoothed joints, the ceiling
+    const c = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+    ]);
     c.curveType = 'chordal';
     return c;
   }, []);
@@ -223,7 +236,7 @@ function Band({ layout, textures, theme, onReady }: { layout: Layout; textures: 
   }, [hovered, dragOffset]);
 
   useFrame((state, delta) => {
-    const { vec, dir, ang, rot } = scratch;
+    const { vec, dir, ang, rot, quat } = scratch;
     const bodies = { fixed: fixed.current, j1: j1.current, j2: j2.current, j3: j3.current, card: card.current };
     if (!bodies.fixed || !bodies.j1 || !bodies.j2 || !bodies.j3 || !bodies.card) return;
 
@@ -249,20 +262,29 @@ function Band({ layout, textures, theme, onReady }: { layout: Layout; textures: 
       point.lerp(vec, Math.min(1, delta * (10 + distance * 40)));
     }
 
-    const p3 = bodies.j3.translation();
+    // The strap's lower end is taken from the card itself, not from the rope's last
+    // joint: it starts inside the clasp and leaves it along the card's own axis, so
+    // it stays glued to the clasp instead of wobbling against it.
+    const cardPos = bodies.card.translation();
+    const cardRot = bodies.card.rotation();
     const p0 = bodies.fixed.translation();
-    curve.points[0]!.set(p3.x, p3.y, p3.z);
-    curve.points[1]!.copy(smoothed.current.get(bodies.j2)!);
-    curve.points[2]!.copy(smoothed.current.get(bodies.j1)!);
-    curve.points[3]!.set(p0.x, p0.y, p0.z);
-    (band.current?.geometry as MeshLineGeometry | undefined)?.setPoints(curve.getPoints(32));
+    quat.set(cardRot.x, cardRot.y, cardRot.z, cardRot.w);
+    curve.points[0]!.set(0, CLASP_Y, 0).applyQuaternion(quat).add(vec.set(cardPos.x, cardPos.y, cardPos.z));
+    curve.points[1]!.set(0, CLASP_Y + 0.3, 0).applyQuaternion(quat).add(vec);
+    curve.points[2]!.copy(smoothed.current.get(bodies.j2)!);
+    curve.points[3]!.copy(smoothed.current.get(bodies.j1)!);
+    curve.points[4]!.set(p0.x, p0.y, p0.z);
+    (band.current?.geometry as MeshLineGeometry | undefined)?.setPoints(curve.getPoints(40));
 
-    // Ease the card back to face the camera
-    const angvel = bodies.card.angvel();
-    const rotation = bodies.card.rotation();
-    ang.set(angvel.x, angvel.y, angvel.z);
-    rot.set(rotation.x, rotation.y, rotation.z);
-    bodies.card.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z }, true);
+    // Ease the card back to face the camera. Never wake it to do so: once the swing
+    // has died down the bodies must be allowed to sleep, or the solver keeps
+    // nudging them and the whole badge trembles at rest.
+    if (!bodies.card.isSleeping()) {
+      const angvel = bodies.card.angvel();
+      ang.set(angvel.x, angvel.y, angvel.z);
+      rot.set(cardRot.x, cardRot.y, cardRot.z);
+      bodies.card.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z }, false);
+    }
   });
 
   const segment = { canSleep: true, colliders: false as const, angularDamping: 2, linearDamping: 2 };
