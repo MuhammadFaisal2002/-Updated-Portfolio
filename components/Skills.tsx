@@ -36,7 +36,7 @@ export default function Skills() {
     { title: 'Frontend', skills: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Zustand', 'React Query'] },
     { title: 'Backend', skills: ['Node.js', 'Laravel', 'PHP', 'WordPress', 'RESTful API'] },
     { title: 'Database', skills: ['MySQL', 'PostgreSQL'] },
-    { title: 'Other', skills: ['Python', 'Git', 'Claude Code', 'Agile/Scrum', 'OpenAI API'] },
+    { title: 'Other', skills: ['Python', 'Git', 'Docker', 'Claude Code', 'Agile/Scrum', 'OpenAI API'] },
   ];
 
   return (

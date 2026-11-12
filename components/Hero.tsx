@@ -114,7 +114,7 @@ export default function Hero() {
             className="font-mono text-sm md:text-base opacity-70 max-w-xl mb-10 border-l-[3px] border-primary pl-5 leading-relaxed text-left mx-auto md:mx-0"
             style={{ color: 'var(--foreground)' }}
           >
-            Next.js and Laravel developer building production EdTech, healthcare, and AI platforms.
+            Next.js, Node.js, and Laravel developer building production EdTech, healthcare, and AI platforms.
             Custom video engines, real-time grading, RESTful APIs, and interfaces people enjoy using.
           </motion.p>
 

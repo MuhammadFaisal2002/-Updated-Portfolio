@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Faisal Abshar | Full Stack Developer",
-  description: "Portfolio of Muhammad Faisal Abshar, a Full Stack Developer specializing in Next.js, React, Laravel, and Node.js.",
+  description: "Portfolio of Muhammad Faisal Abshar, a Full Stack Developer specializing in Next.js, React, Node.js, and Laravel.",
 };
 
 // Runs before hydration so a saved light theme never flashes dark first.

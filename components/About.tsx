@@ -26,7 +26,7 @@ const ABOUT_CODE = [
   '  role: \'Full Stack Developer\',',
   '  location: \'Karachi, PK\',',
   '  experience: \'2+ years\',',
-  '  stack: [\'Next.js\', \'Laravel\', \'TypeScript\', \'MySQL\'],',
+  '  stack: [\'Next.js\', \'Node.js\', \'Laravel\', \'TypeScript\', \'MySQL\'],',
   '  focus: [\'EdTech\', \'Healthcare\', \'AI platforms\'],',
   '  openTo: [\'freelance\', \'remote roles\'],',
   '};',
@@ -99,7 +99,7 @@ export default function About() {
           <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="w-full md:w-7/12">
             <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>I&apos;m M Faisal Abshar and I&apos;m a <span className="text-primary">Full Stack Developer</span></h3>
             <div className="space-y-4 text-lg leading-relaxed opacity-80" style={{ color: 'var(--foreground)' }}>
-              <p>With over 2 years of hands-on experience, I deliver production-grade web applications across EdTech and AI platforms. I specialize in Next.js, React, TypeScript, Laravel, and Node.js.</p>
+              <p>With over 2 years of hands-on experience, I deliver production-grade web applications across EdTech and AI platforms. I specialize in Next.js, React, TypeScript, Node.js, and Laravel.</p>
               <p>My track record includes building complex systems such as a custom video learning engine, real-time grading pipelines, and AI-integrated conversational platforms.</p>
               <p>Currently pursuing a BS in Software Engineering at Sindh Madressatul Islam University, while working full-time.</p>
             </div>

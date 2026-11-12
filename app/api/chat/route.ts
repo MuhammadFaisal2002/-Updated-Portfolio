@@ -4,9 +4,9 @@ import { getClientIp, isRateLimited } from '@/lib/rateLimit';
 
 // Knowledge base - Fallback if API not configured
 const knowledgeBase = {
-  experience: "I have 2+ years of hands-on experience building production-grade web applications. Currently working at 97 Solutions as a Full Stack Developer (Feb 2026 - Present), and previously worked at 360 Xpert Solution (Feb 2025 - Jan 2026). I specialize in Next.js, React, Laravel, and building scalable applications.",
+  experience: "I have 2+ years of hands-on experience building production-grade web applications. Currently working at 97 Solutions as a Full Stack Developer (Feb 2026 - Present), and previously worked at 360 Xpert Solution (Feb 2025 - Jan 2026). I specialize in Next.js, React, Node.js, Laravel, and building scalable applications.",
   
-  skills: "I'm proficient in:\n\n🎨 Frontend:\n• Next.js & React\n• TypeScript & JavaScript\n• Tailwind CSS\n• Zustand & React Query\n\n⚙️ Backend:\n• Laravel & PHP\n• Node.js\n• WordPress\n• RESTful APIs\n\n💾 Databases:\n• MySQL\n• PostgreSQL\n\n🔧 Other:\n• Python\n• Git\n• Claude Code (AI-assisted development)\n• OpenAI & Gemini APIs",
+  skills: "I'm proficient in:\n\n🎨 Frontend:\n• Next.js & React\n• TypeScript & JavaScript\n• Tailwind CSS\n• Zustand & React Query\n\n⚙️ Backend:\n• Laravel & PHP\n• Node.js\n• WordPress\n• RESTful APIs\n\n💾 Databases:\n• MySQL\n• PostgreSQL\n\n🔧 Other:\n• Python\n• Git\n• Docker\n• Claude Code (AI-assisted development)\n• OpenAI & Gemini APIs",
   
   projects: {
     all: "I've worked on several exciting projects:\n\n1. 🎓 LearnBright - EdTech Platform (dev.learnbright.org)\n   Interactive dashboards with custom video engine\n\n2. 🏥 HomaCare - Healthcare Platform (dev.homacare.co)\n   Multilingual healthcare web application\n\n3. 🤖 SochAI - AI Group Platform (sochai.360xpertsolutions.com)\n   Conversational AI with group chat\n\n4. 💼 Conclavity - Business Platform (conclavity.com)\n   Production-grade web application\n\nAsk me about any specific project!",
@@ -183,8 +183,9 @@ ABOUT FAISAL:
 - Full Stack Developer with 2+ years experience
 - Currently at 97 Solutions (Feb 2026 - Present)
 - Previously at 360 Xpert Solution (Feb 2025 - Jan 2026)
-- Expert in: Next.js, React, TypeScript, Laravel, WordPress, MySQL, PostgreSQL
+- Expert in: Next.js, React, TypeScript, Node.js, Laravel, WordPress, MySQL, PostgreSQL
 - Uses Claude Code for AI-assisted development
+- Works with Docker for containerized development and deployment
 - Location: Karachi, Pakistan
 - Email: faisalabshar2002@gmail.com
 - Phone: 03072173457

@@ -7,7 +7,7 @@ export default function Services() {
     {
       icon: Code2,
       title: 'Full Stack Development',
-      description: 'End-to-end web application development using modern technologies like Next.js, React, Laravel, and Node.js.',
+      description: 'End-to-end web application development using modern technologies like Next.js, React, Node.js, and Laravel.',
       features: ['Custom Web Apps', 'Responsive Design', 'Database Integration', 'API Development']
     },
     {
