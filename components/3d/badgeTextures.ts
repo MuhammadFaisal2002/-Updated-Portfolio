@@ -236,7 +236,7 @@ function paintBack(p: Palette) {
   ctx.textAlign = 'center';
   ctx.fillStyle = p.inkSoft;
   ctx.font = `500 22px ${MONO}`;
-  ctx.fillText('NEXT.JS  ·  LARAVEL  ·  TYPESCRIPT', FACE_W / 2, 770);
+  ctx.fillText('NEXT.JS · NODE.JS · LARAVEL · TYPESCRIPT', FACE_W / 2, 770);
   ctx.fillStyle = p.ink;
   ctx.font = `500 23px ${MONO}`;
   ctx.fillText('faisalabshar2002@gmail.com', FACE_W / 2, 824);
