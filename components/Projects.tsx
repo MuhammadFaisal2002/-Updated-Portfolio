@@ -1,6 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Projects() {
   const projects = [
@@ -11,6 +12,8 @@ export default function Projects() {
       tech: ['Next.js', 'TypeScript', 'Laravel', 'MySQL'],
       link: 'https://dev.learnbright.org',
       image: '/projects/learnbright.jpg',
+      imageAlt: 'LearnBright dashboards on two laptops in a classroom',
+      focus: '50% 62%',
       color: 'from-blue-500 to-cyan-500'
     },
     {
@@ -20,6 +23,8 @@ export default function Projects() {
       tech: ['Next.js', 'Tailwind CSS'],
       link: 'https://dev.homacare.co',
       image: '/projects/homacare.jpg',
+      imageAlt: 'HomaCare consultation and lab test screens on two laptops in a hospital',
+      focus: '50% 50%',
       color: 'from-green-500 to-emerald-500'
     },
     {
@@ -28,7 +33,10 @@ export default function Projects() {
       description: 'Conversational AI web UI with group chat and enhanced performance.',
       tech: ['Next.js', 'AI Integration'],
       link: 'https://sochai.360xpertsolutions.com',
-      image: '/projects/sochai.jpg',
+      // Add /projects/sochai.jpg and set it here to replace the gradient.
+      image: null,
+      imageAlt: '',
+      focus: '50% 50%',
       color: 'from-purple-500 to-pink-500'
     },
     {
@@ -38,6 +46,8 @@ export default function Projects() {
       tech: ['Next.js', 'Tailwind CSS'],
       link: 'https://conclavity.com',
       image: '/projects/conclavity.jpg',
+      imageAlt: 'Conclavity chat and call screens on two laptops in a team room',
+      focus: '50% 50%',
       color: 'from-orange-500 to-red-500'
     }
   ];
@@ -65,16 +75,33 @@ export default function Projects() {
               className="group relative rounded-xl overflow-hidden border border-primary/20 hover:border-primary/50 transition-all duration-300"
               style={{ backgroundColor: 'var(--card)' }}
             >
-              {/* Project Image/Gradient */}
-              <div className={`h-48 bg-gradient-to-br ${project.color} relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <h3 className="text-3xl font-bold text-white z-10">{project.title}</h3>
-                </div>
+              {/* Project image (3:2, matching the artwork) or a gradient until one is added */}
+              <div className={`aspect-[3/2] bg-gradient-to-br ${project.color} relative overflow-hidden`}>
+                {project.image ? (
+                  <>
+                    <Image
+                      src={project.image}
+                      alt={project.imageAlt}
+                      fill
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      style={{ objectPosition: project.focus }}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent pointer-events-none"></div>
+                  </>
+                ) : (
+                  <>
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-4xl font-bold text-white/90 z-10">{project.title}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Project Content */}
               <div className="p-6">
+                <h3 className="text-2xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{project.title}</h3>
                 <p className="text-primary font-medium text-sm mb-2">{project.subtitle}</p>
                 <p className="opacity-80 mb-4 leading-relaxed" style={{ color: 'var(--foreground)' }}>
                   {project.description}
