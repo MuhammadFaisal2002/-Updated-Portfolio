@@ -33,10 +33,9 @@ export default function Projects() {
       description: 'Conversational AI web UI with group chat and enhanced performance.',
       tech: ['Next.js', 'AI Integration'],
       link: 'https://sochai.360xpertsolutions.com',
-      // Add /projects/sochai.jpg and set it here to replace the gradient.
-      image: null,
-      imageAlt: '',
-      focus: '50% 50%',
+      image: '/projects/sochai.jpg',
+      imageAlt: 'SochAI community feed and chat screens on two laptops at a meetup',
+      focus: '50% 55%',
       color: 'from-purple-500 to-pink-500'
     },
     {
