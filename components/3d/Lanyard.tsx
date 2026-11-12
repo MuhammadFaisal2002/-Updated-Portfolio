@@ -9,7 +9,7 @@ import {
   type ThreeElement,
   type ThreeEvent,
 } from '@react-three/fiber';
-import { Environment, Lightformer } from '@react-three/drei';
+import { Environment, Lightformer, RoundedBox } from '@react-three/drei';
 import {
   BallCollider,
   CuboidCollider,
@@ -40,7 +40,17 @@ const CARD_H = 2.25;
 const CARD_DEPTH = 0.03;
 const CARD_BEVEL = 0.012;
 /** Where the strap meets the card, measured up from the card's centre. */
-const CARD_ANCHOR_Y = CARD_H / 2 + 0.3;
+const CARD_ANCHOR_Y = CARD_H / 2 + 0.34;
+
+// ── Hook hardware (card-local units) ──────────────────────────────────────────
+/** The slot painted near the top of the card; the loop threads through it. */
+const SLOT_Y = CARD_H / 2 - 0.1;
+const LOOP_HALF_WIDTH = 0.095;
+const LOOP_TOP_Y = CARD_H / 2 + 0.24;
+const LOOP_TUBE = 0.02;
+/** The clasp the strap is sewn into, sitting over the top of the loop. */
+const CLASP_Y = CARD_H / 2 + 0.275;
+const HARDWARE = { color: '#d9dce1', metalness: 0.85, roughness: 0.26 } as const;
 /** Length of each of the three rope segments between the ceiling and the card. */
 const SEGMENT = 1;
 const FOV = 25;
@@ -106,6 +116,26 @@ function measure(section: HTMLElement, slot: HTMLElement): Layout | null {
 const layoutKey = (l: Layout) => `${Math.round(l.width / 4)}x${Math.round(l.height / 4)}:${l.anchor[0].toFixed(2)}:${l.anchor[1].toFixed(2)}`;
 
 // ── Card geometry ─────────────────────────────────────────────────────────────
+/** Oval (stadium-shaped) wire loop that hangs the card from the clasp. */
+function useLoopGeometry() {
+  return useMemo(() => {
+    const a = LOOP_HALF_WIDTH;
+    const centreY = (SLOT_Y + LOOP_TOP_Y) / 2;
+    const b = (LOOP_TOP_Y - SLOT_Y) / 2 - a; // half-length of the straight sides
+    const points: THREE.Vector3[] = [];
+    const arcSteps = 12;
+    for (let i = 0; i <= arcSteps; i++) {
+      const t = (i / arcSteps) * Math.PI; // top arc, right to left
+      points.push(new THREE.Vector3(Math.cos(t) * a, centreY + b + Math.sin(t) * a, 0));
+    }
+    for (let i = 0; i <= arcSteps; i++) {
+      const t = Math.PI + (i / arcSteps) * Math.PI; // bottom arc, left to right
+      points.push(new THREE.Vector3(Math.cos(t) * a, centreY - b + Math.sin(t) * a, 0));
+    }
+    return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.1), 96, LOOP_TUBE, 12, true);
+  }, []);
+}
+
 function useCardGeometry() {
   return useMemo(() => {
     const w = CARD_W;
@@ -165,6 +195,7 @@ function Band({ layout, textures, theme, onReady }: { layout: Layout; textures: 
     return c;
   }, []);
   const geometry = useCardGeometry();
+  const loopGeometry = useLoopGeometry();
   const size = useThree((state) => state.size);
   const resolution = useMemo(() => new THREE.Vector2(size.width, size.height), [size.width, size.height]);
   const strapRepeat = useMemo(() => new THREE.Vector2(-4, 1), []);
@@ -303,14 +334,22 @@ function Band({ layout, textures, theme, onReady }: { layout: Layout; textures: 
             <mesh geometry={geometry.face} position={[0, 0, -glossZ]} rotation={[0, Math.PI, 0]} renderOrder={3}>
               <meshPhysicalMaterial color="#000000" metalness={1} roughness={0.16} transparent depthWrite={false} blending={THREE.AdditiveBlending} opacity={0.5} />
             </mesh>
-            {/* Clip and ring that the strap threads through */}
-            <mesh position={[0, CARD_H / 2 + 0.05, 0]}>
-              <boxGeometry args={[0.36, 0.24, 0.075]} />
-              <meshStandardMaterial color="#c9ccd1" metalness={0.75} roughness={0.32} />
+            {/* Hook: an oval wire loop threaded through the card's slot, gathered at the
+                top by a rounded clasp that the strap is sewn into. */}
+            <mesh geometry={loopGeometry}>
+              <meshStandardMaterial {...HARDWARE} />
             </mesh>
-            <mesh position={[0, CARD_H / 2 + 0.22, 0]}>
-              <torusGeometry args={[0.1, 0.024, 12, 32]} />
-              <meshStandardMaterial color="#c9ccd1" metalness={0.75} roughness={0.32} />
+            <RoundedBox args={[0.3, 0.13, 0.085]} radius={0.035} smoothness={5} position={[0, CLASP_Y, 0]}>
+              <meshStandardMaterial {...HARDWARE} />
+            </RoundedBox>
+            {/* Stitched seam and rivet on the clasp */}
+            <mesh position={[0, CLASP_Y - 0.035, 0.044]}>
+              <boxGeometry args={[0.22, 0.008, 0.004]} />
+              <meshStandardMaterial color="#8d9198" metalness={0.8} roughness={0.4} />
+            </mesh>
+            <mesh position={[0, CLASP_Y + 0.012, 0.044]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.02, 0.02, 0.012, 20]} />
+              <meshStandardMaterial color="#f1f2f4" metalness={0.9} roughness={0.2} />
             </mesh>
           </group>
         </RigidBody>
