@@ -22,6 +22,7 @@ import {
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
+import { useTheme, type Theme } from '@/lib/useTheme';
 import { createBadgeTextures, type BadgeTextures } from './badgeTextures';
 
 extend({ MeshLineGeometry, MeshLineMaterial });
@@ -145,7 +146,7 @@ function useCardGeometry() {
 }
 
 // ── Strap + card ──────────────────────────────────────────────────────────────
-function Band({ layout, textures, onReady }: { layout: Layout; textures: BadgeTextures; onReady: () => void }) {
+function Band({ layout, textures, theme, onReady }: { layout: Layout; textures: BadgeTextures; theme: Theme; onReady: () => void }) {
   const band = useRef<THREE.Mesh>(null);
   const fixed = useRef<RapierRigidBody>(null);
   const j1 = useRef<RapierRigidBody>(null);
@@ -235,6 +236,9 @@ function Band({ layout, textures, onReady }: { layout: Layout; textures: BadgeTe
 
   const segment = { canSleep: true, colliders: false as const, angularDamping: 2, linearDamping: 2 };
   const faceZ = CARD_DEPTH / 2 + CARD_BEVEL + 0.002;
+  const glossZ = faceZ + 0.002;
+  // Clear glass slab: mostly see-through, a touch more body on the light theme
+  const slab = theme === 'dark' ? { color: '#dfe3ea', opacity: 0.1 } : { color: '#ffffff', opacity: 0.3 };
 
   const handleDown = (e: ThreeEvent<PointerEvent>) => {
     const body = card.current;
@@ -271,34 +275,56 @@ function Band({ layout, textures, onReady }: { layout: Layout; textures: BadgeTe
             onPointerUp={handleUp}
             onPointerCancel={() => setDragOffset(null)}
           >
-            <mesh geometry={geometry.body}>
-              <meshStandardMaterial color="#141414" metalness={0.65} roughness={0.35} />
+            {/* Glass card, back to front: a clear slab whose bevel catches the light, the
+                printed pane (unlit, so its colours stay true), and an additive gloss
+                layer that only adds the environment's reflections on top. */}
+            <mesh geometry={geometry.body} renderOrder={1}>
+              <meshPhysicalMaterial
+                color={slab.color}
+                transparent
+                opacity={slab.opacity}
+                depthWrite={false}
+                roughness={0.08}
+                metalness={0}
+                clearcoat={1}
+                clearcoatRoughness={0.05}
+                toneMapped={false}
+              />
             </mesh>
-            <mesh geometry={geometry.face} position={[0, 0, faceZ]}>
-              <meshPhysicalMaterial map={textures.front} clearcoat={1} clearcoatRoughness={0.15} roughness={0.6} metalness={0.2} />
+            <mesh geometry={geometry.face} position={[0, 0, faceZ]} renderOrder={2}>
+              <meshBasicMaterial map={textures.front} transparent depthWrite={false} toneMapped={false} />
             </mesh>
-            <mesh geometry={geometry.face} position={[0, 0, -faceZ]} rotation={[0, Math.PI, 0]}>
-              <meshPhysicalMaterial map={textures.back} clearcoat={1} clearcoatRoughness={0.15} roughness={0.6} metalness={0.2} />
+            <mesh geometry={geometry.face} position={[0, 0, glossZ]} renderOrder={3}>
+              <meshPhysicalMaterial color="#000000" metalness={1} roughness={0.16} transparent depthWrite={false} blending={THREE.AdditiveBlending} opacity={0.5} />
+            </mesh>
+            <mesh geometry={geometry.face} position={[0, 0, -faceZ]} rotation={[0, Math.PI, 0]} renderOrder={2}>
+              <meshBasicMaterial map={textures.back} transparent depthWrite={false} toneMapped={false} />
+            </mesh>
+            <mesh geometry={geometry.face} position={[0, 0, -glossZ]} rotation={[0, Math.PI, 0]} renderOrder={3}>
+              <meshPhysicalMaterial color="#000000" metalness={1} roughness={0.16} transparent depthWrite={false} blending={THREE.AdditiveBlending} opacity={0.5} />
             </mesh>
             {/* Clip and ring that the strap threads through */}
             <mesh position={[0, CARD_H / 2 + 0.05, 0]}>
               <boxGeometry args={[0.36, 0.24, 0.075]} />
-              <meshStandardMaterial color="#b9b9b9" metalness={1} roughness={0.28} />
+              <meshStandardMaterial color="#c9ccd1" metalness={0.75} roughness={0.32} />
             </mesh>
             <mesh position={[0, CARD_H / 2 + 0.22, 0]}>
               <torusGeometry args={[0.1, 0.024, 12, 32]} />
-              <meshStandardMaterial color="#b9b9b9" metalness={1} roughness={0.28} />
+              <meshStandardMaterial color="#c9ccd1" metalness={0.75} roughness={0.32} />
             </mesh>
           </group>
         </RigidBody>
       </group>
 
-      <mesh ref={band}>
+      {/* Drawn first and kept out of the depth buffer, so the strap always passes
+          behind the ring instead of trading places with it from frame to frame. */}
+      <mesh ref={band} renderOrder={-1} frustumCulled={false}>
         <meshLineGeometry />
         <meshLineMaterial
           args={[{ resolution }]}
           color="white"
           depthTest={false}
+          depthWrite={false}
           resolution={resolution}
           useMap={1}
           map={textures.strap}
@@ -321,6 +347,7 @@ function Band({ layout, textures, onReady }: { layout: Layout; textures: BadgeTe
 export default function Lanyard({ sectionRef, slotRef, visible, photoSrc, onReady }: LanyardProps) {
   const [layout, setLayout] = useState<Layout | null>(null);
   const [textures, setTextures] = useState<BadgeTextures | null>(null);
+  const theme = useTheme();
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -347,7 +374,7 @@ export default function Lanyard({ sectionRef, slotRef, visible, photoSrc, onRead
   useEffect(() => {
     let cancelled = false;
     let created: BadgeTextures | null = null;
-    createBadgeTextures(photoSrc)
+    createBadgeTextures(photoSrc, theme)
       .then((result) => {
         created = result;
         if (cancelled) Object.values(result).forEach((t) => t.dispose());
@@ -358,7 +385,7 @@ export default function Lanyard({ sectionRef, slotRef, visible, photoSrc, onRead
       cancelled = true;
       if (created) Object.values(created).forEach((t) => t.dispose());
     };
-  }, [photoSrc]);
+  }, [photoSrc, theme]);
 
   if (!layout || !textures) return null;
 
@@ -386,10 +413,11 @@ export default function Lanyard({ sectionRef, slotRef, visible, photoSrc, onRead
           },
         })}
       >
-        <ambientLight intensity={Math.PI} />
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[2, 3, 6]} intensity={2.2} />
         <Suspense fallback={null}>
           <Physics gravity={[0, -40, 0]} timeStep={1 / 60} paused={!visible}>
-            <Band layout={layout} textures={textures} onReady={onReady} />
+            <Band layout={layout} textures={textures} theme={theme} onReady={onReady} />
           </Physics>
         </Suspense>
         <Environment blur={0.75}>

@@ -3,16 +3,64 @@ import * as THREE from 'three';
 /** Card face texture size in pixels (same 1.6 : 2.25 ratio as the 3D card). */
 const FACE_W = 640;
 const FACE_H = 900;
+/** Corner radius in pixels, matching the card geometry's rounded corners. */
+const FACE_RADIUS = 44;
 
 const CRIMSON = '#dc143c';
 const DISPLAY = "'Itim-Regular', Arial, sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+export type BadgeTheme = 'dark' | 'light';
 
 export interface BadgeTextures {
   front: THREE.CanvasTexture;
   back: THREE.CanvasTexture;
   strap: THREE.CanvasTexture;
 }
+
+/** Glass tint and ink for each site theme. The card is translucent, so the page shows through. */
+interface Palette {
+  tintTop: string;
+  tintBottom: string;
+  rim: string;
+  rimOuter: string;
+  sheen: string;
+  grid: string;
+  slot: string;
+  ink: string;
+  inkSoft: string;
+  rule: string;
+  textShadow: string;
+}
+
+const PALETTES: Record<BadgeTheme, Palette> = {
+  dark: {
+    tintTop: 'rgba(255, 255, 255, 0.15)',
+    tintBottom: 'rgba(255, 255, 255, 0.05)',
+    rim: 'rgba(255, 255, 255, 0.5)',
+    rimOuter: 'rgba(255, 255, 255, 0.12)',
+    sheen: 'rgba(255, 255, 255, 0.11)',
+    grid: 'rgba(255, 255, 255, 0.04)',
+    slot: 'rgba(0, 0, 0, 0.5)',
+    ink: '#ffffff',
+    inkSoft: 'rgba(255, 255, 255, 0.72)',
+    rule: 'rgba(255, 255, 255, 0.2)',
+    textShadow: 'rgba(0, 0, 0, 0.55)',
+  },
+  light: {
+    tintTop: 'rgba(255, 255, 255, 0.78)',
+    tintBottom: 'rgba(255, 255, 255, 0.5)',
+    rim: 'rgba(255, 255, 255, 0.98)',
+    rimOuter: 'rgba(0, 0, 0, 0.16)',
+    sheen: 'rgba(255, 255, 255, 0.5)',
+    grid: 'rgba(0, 0, 0, 0.035)',
+    slot: 'rgba(0, 0, 0, 0.3)',
+    ink: '#1a1a1a',
+    inkSoft: 'rgba(0, 0, 0, 0.62)',
+    rule: 'rgba(0, 0, 0, 0.16)',
+    textShadow: 'rgba(255, 255, 255, 0)',
+  },
+};
 
 function makeCanvas(width: number, height: number) {
   const canvas = document.createElement('canvas');
@@ -33,15 +81,20 @@ function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.closePath();
 }
 
-function paintCardBase(ctx: CanvasRenderingContext2D) {
-  const bg = ctx.createLinearGradient(0, 0, 0, FACE_H);
-  bg.addColorStop(0, '#262626');
-  bg.addColorStop(1, '#101010');
-  ctx.fillStyle = bg;
+/** Frosted glass pane: translucent tint, crimson glow, diagonal sheen and a bright rim. */
+function paintGlass(ctx: CanvasRenderingContext2D, p: Palette) {
+  ctx.clearRect(0, 0, FACE_W, FACE_H);
+  ctx.save();
+  roundedRect(ctx, 0, 0, FACE_W, FACE_H, FACE_RADIUS);
+  ctx.clip();
+
+  const tint = ctx.createLinearGradient(0, 0, 0, FACE_H);
+  tint.addColorStop(0, p.tintTop);
+  tint.addColorStop(1, p.tintBottom);
+  ctx.fillStyle = tint;
   ctx.fillRect(0, 0, FACE_W, FACE_H);
 
-  // Faint engineering grid, echoing the site background
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.045)';
+  ctx.strokeStyle = p.grid;
   ctx.lineWidth = 1;
   for (let x = 40; x < FACE_W; x += 40) {
     ctx.beginPath();
@@ -56,27 +109,52 @@ function paintCardBase(ctx: CanvasRenderingContext2D) {
     ctx.stroke();
   }
 
-  // Crimson glow in the top-right corner
-  const glow = ctx.createRadialGradient(FACE_W, 0, 0, FACE_W, 0, 520);
-  glow.addColorStop(0, 'rgba(220, 20, 60, 0.38)');
+  const glow = ctx.createRadialGradient(FACE_W, 0, 0, FACE_W, 0, 560);
+  glow.addColorStop(0, 'rgba(220, 20, 60, 0.34)');
   glow.addColorStop(1, 'rgba(220, 20, 60, 0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, FACE_W, FACE_H);
 
-  // Punched slot where the clip attaches
-  roundedRect(ctx, FACE_W / 2 - 62, 26, 124, 24, 12);
-  ctx.fillStyle = '#050505';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-  ctx.lineWidth = 2;
+  const sheen = ctx.createLinearGradient(0, 0, FACE_W, FACE_H * 0.7);
+  sheen.addColorStop(0.22, 'rgba(255, 255, 255, 0)');
+  sheen.addColorStop(0.36, p.sheen);
+  sheen.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(0, 0, FACE_W, FACE_H);
+
+  ctx.fillStyle = 'rgba(220, 20, 60, 0.9)';
+  ctx.fillRect(0, FACE_H - 10, FACE_W, 10);
+  ctx.restore();
+
+  // Rim light: a bright inner edge with a faint outer hairline
+  roundedRect(ctx, 1.5, 1.5, FACE_W - 3, FACE_H - 3, FACE_RADIUS - 1.5);
+  ctx.strokeStyle = p.rimOuter;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  roundedRect(ctx, 5, 5, FACE_W - 10, FACE_H - 10, FACE_RADIUS - 5);
+  ctx.strokeStyle = p.rim;
+  ctx.lineWidth = 2.5;
   ctx.stroke();
 
-  // Bottom accent bar
-  ctx.fillStyle = CRIMSON;
-  ctx.fillRect(0, FACE_H - 14, FACE_W, 14);
+  // Punched slot where the clip attaches
+  roundedRect(ctx, FACE_W / 2 - 62, 28, 124, 24, 12);
+  ctx.fillStyle = p.slot;
+  ctx.fill();
+  ctx.strokeStyle = p.rim;
+  ctx.lineWidth = 2;
+  ctx.stroke();
 }
 
-function drawLogo(ctx: CanvasRenderingContext2D, centerX: number, baseline: number, size: number) {
+function withTextShadow(ctx: CanvasRenderingContext2D, p: Palette, draw: () => void) {
+  ctx.save();
+  ctx.shadowColor = p.textShadow;
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 2;
+  draw();
+  ctx.restore();
+}
+
+function drawLogo(ctx: CanvasRenderingContext2D, p: Palette, centerX: number, baseline: number, size: number) {
   ctx.font = `700 ${size}px ${DISPLAY}`;
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -87,17 +165,17 @@ function drawLogo(ctx: CanvasRenderingContext2D, centerX: number, baseline: numb
   ctx.fillStyle = CRIMSON;
   ctx.fillText(left, x, baseline);
   x += ctx.measureText(left).width;
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = p.ink;
   ctx.fillText(right, x, baseline);
 }
 
-function paintFront(photo: HTMLImageElement | null) {
+function paintFront(photo: HTMLImageElement | null, p: Palette) {
   const { canvas, ctx } = makeCanvas(FACE_W, FACE_H);
-  paintCardBase(ctx);
-  drawLogo(ctx, FACE_W / 2, 112, 40);
+  paintGlass(ctx, p);
+  withTextShadow(ctx, p, () => drawLogo(ctx, p, FACE_W / 2, 114, 40));
 
   // Photo, cover-cropped into a rounded frame and biased toward the face
-  const frame = { x: 80, y: 146, size: 480, radius: 30 };
+  const frame = { x: 80, y: 148, size: 480, radius: 30 };
   ctx.save();
   roundedRect(ctx, frame.x, frame.y, frame.size, frame.size, frame.radius);
   ctx.clip();
@@ -107,54 +185,59 @@ function paintFront(photo: HTMLImageElement | null) {
     const sy = (photo.naturalHeight - side) * 0.12;
     ctx.drawImage(photo, sx, sy, side, side, frame.x, frame.y, frame.size, frame.size);
   } else {
-    ctx.fillStyle = '#2d2d2d';
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.35)';
     ctx.fillRect(frame.x, frame.y, frame.size, frame.size);
   }
   ctx.restore();
   roundedRect(ctx, frame.x, frame.y, frame.size, frame.size, frame.radius);
-  ctx.strokeStyle = CRIMSON;
-  ctx.lineWidth = 5;
+  ctx.strokeStyle = 'rgba(220, 20, 60, 0.9)';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  withTextShadow(ctx, p, () => {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = p.ink;
+    ctx.font = `700 52px ${DISPLAY}`;
+    ctx.fillText('M Faisal Abshar', FACE_W / 2, 706);
+    ctx.fillStyle = CRIMSON;
+    ctx.font = `700 31px ${DISPLAY}`;
+    ctx.fillText('Full Stack Developer', FACE_W / 2, 754);
+  });
+
+  ctx.strokeStyle = p.rule;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(120, 788);
+  ctx.lineTo(FACE_W - 120, 788);
   ctx.stroke();
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `700 52px ${DISPLAY}`;
-  ctx.fillText('M Faisal Abshar', FACE_W / 2, 704);
-
-  ctx.fillStyle = CRIMSON;
-  ctx.font = `700 31px ${DISPLAY}`;
-  ctx.fillText('Full Stack Developer', FACE_W / 2, 752);
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(120, 786);
-  ctx.lineTo(FACE_W - 120, 786);
-  ctx.stroke();
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.fillStyle = p.inkSoft;
   ctx.font = `500 21px ${MONO}`;
-  ctx.fillText('KARACHI, PK  ·  UTC+5', FACE_W / 2, 832);
+  ctx.fillText('KARACHI, PK  ·  UTC+5', FACE_W / 2, 834);
   return canvas;
 }
 
-function paintBack() {
+function paintBack(p: Palette) {
   const { canvas, ctx } = makeCanvas(FACE_W, FACE_H);
-  paintCardBase(ctx);
+  paintGlass(ctx, p);
+
+  withTextShadow(ctx, p, () => {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = CRIMSON;
+    ctx.font = `700 250px ${DISPLAY}`;
+    ctx.fillText('MF', FACE_W / 2, 440);
+    ctx.fillStyle = p.ink;
+    ctx.font = `700 70px ${DISPLAY}`;
+    ctx.fillText('DEVELOPER.', FACE_W / 2, 528);
+  });
 
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = CRIMSON;
-  ctx.font = `700 250px ${DISPLAY}`;
-  ctx.fillText('MF', FACE_W / 2, 440);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `700 70px ${DISPLAY}`;
-  ctx.fillText('DEVELOPER.', FACE_W / 2, 528);
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.fillStyle = p.inkSoft;
   ctx.font = `500 22px ${MONO}`;
   ctx.fillText('NEXT.JS  ·  LARAVEL  ·  TYPESCRIPT', FACE_W / 2, 770);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.fillStyle = p.ink;
   ctx.font = `500 23px ${MONO}`;
   ctx.fillText('faisalabshar2002@gmail.com', FACE_W / 2, 824);
   return canvas;
@@ -206,19 +289,21 @@ function toTexture(canvas: HTMLCanvasElement) {
 
 /**
  * Paints the badge's front, back and strap onto canvases and returns them as
- * textures. The photo is requested through the Next image optimizer so the
- * badge does not pull the full-size original.
+ * textures. The faces are translucent glass panes tinted for the given theme.
+ * The photo is requested through the Next image optimizer so the badge does
+ * not pull the full-size original.
  */
-export async function createBadgeTextures(photoSrc: string): Promise<BadgeTextures> {
+export async function createBadgeTextures(photoSrc: string, theme: BadgeTheme): Promise<BadgeTextures> {
   const optimized = `/_next/image?url=${encodeURIComponent(photoSrc)}&w=828&q=75`;
   const [photo] = await Promise.all([
     loadImage(optimized).catch(() => loadImage(photoSrc)).catch(() => null),
     document.fonts?.load(`700 52px ${DISPLAY}`).catch(() => undefined),
   ]);
 
+  const palette = PALETTES[theme];
   const strap = toTexture(paintStrap());
   strap.wrapS = THREE.RepeatWrapping;
   strap.wrapT = THREE.RepeatWrapping;
 
-  return { front: toTexture(paintFront(photo)), back: toTexture(paintBack()), strap };
+  return { front: toTexture(paintFront(photo, palette)), back: toTexture(paintBack(palette)), strap };
 }
