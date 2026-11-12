@@ -33,14 +33,42 @@ interface GraphConfig {
   rotationSpeed: number;
 }
 
+/** What a node does in the architecture; each role has its own colour. */
+type Role = 'core' | 'data' | 'service' | 'live';
+
 interface Palette {
+  /** Request pulses travelling along the links. */
   signal: string;
-  node: string;
-  edge: string;
-  fog: string;
+  roles: Record<Role, string>;
   labelBg: string;
   labelFg: string;
+  /** Resting opacity of the links. */
+  edgeOpacity: number;
+  /** Scales node glow; kept low on the light theme so colours do not wash out. */
+  glow: number;
 }
+
+const NODE_ROLE: Record<string, Role> = {
+  client: 'core',
+  api: 'core',
+  mysql: 'data',
+  cache: 'data',
+  storage: 'data',
+  auth: 'service',
+  video: 'service',
+  queue: 'service',
+  grading: 'service',
+  realtime: 'live',
+  ai: 'live',
+  state: 'live',
+};
+
+const ROLE_LABELS: [Role, string][] = [
+  ['core', 'CORE'],
+  ['data', 'DATA'],
+  ['service', 'SERVICES'],
+  ['live', 'REALTIME + AI'],
+];
 
 // ── Tech-stack map — hovering a node reveals the real stack behind it ─────────
 const TECH_MAP: Record<string, { label: string; techs: string[] }> = {
@@ -131,17 +159,35 @@ const TABLET: GraphConfig = {
 };
 
 const PALETTE: Record<'dark' | 'light', Palette> = {
-  dark:  { signal: '#dc143c', node: '#e6e6e6', edge: '#f0607e', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#d6d6d6' },
-  light: { signal: '#dc143c', node: '#2e2e2e', edge: '#7a0f26', fog: '#f8f9fa', labelBg: 'rgba(248, 249, 250, 0.8)', labelFg: '#2e2e2e' },
+  // Bright, glowing tones against the dark page
+  dark: {
+    signal: '#ff5c7c',
+    roles: { core: '#ff4d6d', data: '#22d3ee', service: '#fbbf24', live: '#a78bfa' },
+    labelBg: 'rgba(18, 18, 18, 0.78)',
+    labelFg: '#ececec',
+    edgeOpacity: 0.78,
+    glow: 1,
+  },
+  // Deeper, more saturated tones that hold up against the light page
+  light: {
+    signal: '#dc143c',
+    roles: { core: '#dc143c', data: '#0891b2', service: '#d97706', live: '#7c3aed' },
+    labelBg: 'rgba(255, 255, 255, 0.9)',
+    labelFg: '#1a1a1a',
+    edgeOpacity: 0.9,
+    glow: 0.4,
+  },
 };
 
 /** Link lines between nodes: width in pixels and resting opacity. */
-const EDGE_WIDTH = 1.8;
-const EDGE_OPACITY = 0.9;
+const EDGE_WIDTH = 1.6;
+const EDGE_WIDTH_ACTIVE = 2.8;
+/** Nodes always glow a little in their own colour, so they read without relying on lighting. */
+const NODE_BASE_GLOW = 0.55;
 
 /** The part of a drei Line this scene animates each frame. */
 interface EdgeLine {
-  material: { color: THREE.Color; opacity: number };
+  material: { opacity: number; linewidth: number };
 }
 
 const HOP_DURATION = 1.2; // seconds per edge — calm, deliberate
@@ -209,8 +255,16 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
   );
 
   const cSignal = useMemo(() => new THREE.Color(colors.signal), [colors.signal]);
-  const cNode   = useMemo(() => new THREE.Color(colors.node), [colors.node]);
-  const cEdge   = useMemo(() => new THREE.Color(colors.edge), [colors.edge]);
+  const nodeColor = useMemo(() => {
+    const map: Record<string, THREE.Color> = {};
+    cfg.nodes.forEach((n) => { map[n.id] = new THREE.Color(colors.roles[NODE_ROLE[n.id] ?? 'core']); });
+    return map;
+  }, [cfg, colors]);
+  // Each link fades from one node's colour to the other's
+  const edgeColors = useMemo(
+    () => cfg.edges.map(([a, b]) => [nodeColor[a]!, nodeColor[b]!] as [THREE.Color, THREE.Color]),
+    [cfg, nodeColor],
+  );
 
   const groupRef  = useRef<THREE.Group>(null);
   const meshRefs  = useRef<Record<string, THREE.Mesh>>({});
@@ -251,14 +305,14 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
       if (!line) return;
       const mat = line.material;
       if (h === null) {
-        mat.color.copy(cEdge);
-        mat.opacity = EDGE_OPACITY;
+        mat.opacity = colors.edgeOpacity;
+        mat.linewidth = EDGE_WIDTH;
       } else if (a === h || b === h) {
-        mat.color.copy(cSignal);
         mat.opacity = 1;
+        mat.linewidth = EDGE_WIDTH_ACTIVE;
       } else {
-        mat.color.copy(cEdge);
-        mat.opacity = 0.25;
+        mat.opacity = 0.16;
+        mat.linewidth = EDGE_WIDTH;
       }
     });
 
@@ -270,16 +324,13 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
       const mat = mesh.material as THREE.MeshStandardMaterial;
       const glow = nodeGlow.current[n.id] ?? 0;
       if (h === n.id) {
-        mat.color.copy(cSignal);
-        mat.emissiveIntensity = 3.0;
-        mesh.scale.setScalar(1.35);
+        mat.emissiveIntensity = NODE_BASE_GLOW + 2.6 * colors.glow;
+        mesh.scale.setScalar(1.4);
       } else if (h !== null && adjacency[h]?.has(n.id)) {
-        mat.color.copy(cSignal);
-        mat.emissiveIntensity = 1.2;
-        mesh.scale.setScalar(1.12);
+        mat.emissiveIntensity = NODE_BASE_GLOW + 1.1 * colors.glow;
+        mesh.scale.setScalar(1.15);
       } else {
-        mat.color.copy(cNode);
-        mat.emissiveIntensity = glow * 2.5;
+        mat.emissiveIntensity = NODE_BASE_GLOW + glow * 2.2 * colors.glow;
         mesh.scale.setScalar(1 + glow * 0.25);
       }
     });
@@ -331,10 +382,11 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
           key={`edge-${i}`}
           ref={(el) => { edgeRefs.current[i] = el; }}
           points={points}
-          color={colors.edge}
+          vertexColors={edgeColors[i]}
           lineWidth={EDGE_WIDTH}
           transparent
-          opacity={EDGE_OPACITY}
+          opacity={colors.edgeOpacity}
+          toneMapped={false}
         />
       ))}
 
@@ -347,7 +399,12 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
           onPointerLeave={(e) => { e.stopPropagation(); onLeave(); }}
         >
           <icosahedronGeometry args={[cfg.nodeSize, 1]} />
-          <meshStandardMaterial color={cNode} emissive={cSignal} emissiveIntensity={0} toneMapped={false} />
+          <meshStandardMaterial
+            color={nodeColor[node.id]}
+            emissive={nodeColor[node.id]}
+            emissiveIntensity={NODE_BASE_GLOW}
+            toneMapped={false}
+          />
           {node.showLabel && (
             <Html
               position={[0, 0.3, 0]}
@@ -365,6 +422,7 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
                 background: colors.labelBg,
                 padding: '1px 5px',
                 borderRadius: '2px',
+                borderLeft: '2px solid ' + colors.roles[NODE_ROLE[node.id] ?? 'core'],
               }}
             >
               {node.label}
@@ -422,19 +480,30 @@ export default function HeroScene() {
         style={{
           position: 'absolute',
           bottom: '10%',
-          right: '6%',
+          right: 'max(8%, 110px)',
           fontFamily: MONO,
           fontSize: '11px',
           color: colors.labelFg,
           letterSpacing: '0.08em',
-          alignItems: 'center',
-          gap: '6px',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '8px',
           pointerEvents: 'none',
         }}
       >
-        <span style={{ color: colors.signal, fontSize: '8px' }}>●</span>
-        LIVE — request flow
-        <span style={{ opacity: 0.6, marginLeft: '6px' }}>· hover a node</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '10px' }}>
+          {ROLE_LABELS.map(([role, label]) => (
+            <span key={role} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: colors.roles[role] }} />
+              {label}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ color: colors.signal, fontSize: '8px' }}>●</span>
+          LIVE — request flow
+          <span style={{ opacity: 0.6, marginLeft: '6px' }}>· hover a node</span>
+        </div>
       </div>
 
       {/* The Canvas stays mounted; the render loop is paused via `frameloop` when off-screen.
@@ -447,7 +516,6 @@ export default function HeroScene() {
           style={{ background: 'transparent', pointerEvents: 'auto' }}
           frameloop={reduced || !visible ? 'never' : 'always'}
         >
-          <fog attach="fog" args={[colors.fog, cfg.fog[0], cfg.fog[1]]} />
           <directionalLight position={[5, 5, 5]} intensity={1} />
           <ambientLight intensity={0.45} />
           <Graph cfg={cfg} colors={colors} animate={!reduced} />
