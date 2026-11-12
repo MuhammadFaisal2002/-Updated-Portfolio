@@ -270,12 +270,22 @@ function paintStrap() {
   return canvas;
 }
 
+/** Never wait on the photo longer than this; the badge is drawn without it instead. */
+const PHOTO_TIMEOUT_MS = 8000;
+
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
+    const timer = setTimeout(() => reject(new Error(`Timed out loading ${src}`)), PHOTO_TIMEOUT_MS);
     img.decoding = 'async';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Could not load ${src}`));
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error(`Could not load ${src}`));
+    };
     img.src = src;
   });
 }
@@ -290,13 +300,14 @@ function toTexture(canvas: HTMLCanvasElement) {
 /**
  * Paints the badge's front, back and strap onto canvases and returns them as
  * textures. The faces are translucent glass panes tinted for the given theme.
- * The photo is requested through the Next image optimizer so the badge does
- * not pull the full-size original.
+ *
+ * `photoSrc` should be a small static file. The Next image optimizer is
+ * deliberately not used here: a slow or stuck optimizer response would leave
+ * the badge waiting, and a missing photo must never stop the badge appearing.
  */
 export async function createBadgeTextures(photoSrc: string, theme: BadgeTheme): Promise<BadgeTextures> {
-  const optimized = `/_next/image?url=${encodeURIComponent(photoSrc)}&w=828&q=75`;
   const [photo] = await Promise.all([
-    loadImage(optimized).catch(() => loadImage(photoSrc)).catch(() => null),
+    loadImage(photoSrc).catch(() => null),
     document.fonts?.load(`700 52px ${DISPLAY}`).catch(() => undefined),
   ]);
 

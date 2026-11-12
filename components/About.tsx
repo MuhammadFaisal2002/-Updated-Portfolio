@@ -11,6 +11,8 @@ import { useMediaQuery } from '@/lib/useTheme';
 const Lanyard = dynamic(() => import('./3d/Lanyard'), { ssr: false, loading: () => null });
 
 const PROFILE_SRC = '/profile.png';
+/** Small pre-sized copy for the 3D badge, served as a plain static file. */
+const BADGE_PHOTO_SRC = '/profile-badge.jpg';
 
 /** If WebGL or the physics engine fails, fall back to the plain photo. */
 class LanyardBoundary extends Component<{ children: ReactNode; onError: () => void }, { failed: boolean }> {
@@ -64,7 +66,7 @@ export default function About() {
       <CodeWall lines={ABOUT_CODE} side="right" />
       {showBadge && (
         <LanyardBoundary onError={handleBadgeError}>
-          <Lanyard sectionRef={sectionRef} slotRef={slotRef} visible={onScreen} photoSrc={PROFILE_SRC} onReady={handleBadgeReady} />
+          <Lanyard sectionRef={sectionRef} slotRef={slotRef} visible={onScreen} photoSrc={BADGE_PHOTO_SRC} onReady={handleBadgeReady} />
         </LanyardBoundary>
       )}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
