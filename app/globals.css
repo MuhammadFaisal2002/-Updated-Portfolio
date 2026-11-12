@@ -39,6 +39,12 @@
   --glass-piece-edge: rgba(255, 110, 138, 0.85);
   --field-bg: rgba(255, 255, 255, 0.045);
   --field-border: rgba(255, 255, 255, 0.14);
+  /* Border glow on cards: the arc that follows the cursor */
+  --glow-cool: #8b5cf6;
+  --glow-main: #ff3d6a;
+  --glow-hot: #fff0f3;
+  --glow-warm: #ff8a5c;
+  --glow-bleed: rgba(255, 61, 106, 0.2);
 }
 
 [data-theme="light"] {
@@ -62,6 +68,11 @@
   --glass-piece-edge: rgba(220, 20, 60, 0.75);
   --field-bg: rgba(255, 255, 255, 0.7);
   --field-border: rgba(0, 0, 0, 0.14);
+  --glow-cool: #7c3aed;
+  --glow-main: #dc143c;
+  --glow-hot: #ff2e5f;
+  --glow-warm: #f97316;
+  --glow-bleed: rgba(220, 20, 60, 0.12);
 }
 
 /* Site-wide structural grid: fixed layer under everything plus a faint
@@ -316,6 +327,61 @@ section[id] {
 @media (prefers-reduced-motion: reduce) {
   .glass-wrap.is-merged.is-live .glass-glow { animation: none; }
   .glass-submit { transition: none; }
+}
+
+/* Border glow (see BorderGlow.tsx). --glow-angle points from the card's centre
+   to the cursor, --glow-edge is 0 at the centre and 1 on an edge, and
+   --glow-x/--glow-y are the cursor's position inside the card. */
+.border-glow {
+  --glow-angle: 0deg;
+  --glow-edge: 0;
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-spread: 42deg;
+  --glow-arc: conic-gradient(
+    from calc(var(--glow-angle) - var(--glow-spread)) at 50% 50%,
+    transparent 0deg,
+    var(--glow-cool) calc(var(--glow-spread) * 0.35),
+    var(--glow-main) calc(var(--glow-spread) * 0.7),
+    var(--glow-hot) var(--glow-spread),
+    var(--glow-warm) calc(var(--glow-spread) * 1.3),
+    var(--glow-main) calc(var(--glow-spread) * 1.65),
+    transparent calc(var(--glow-spread) * 2),
+    transparent 360deg
+  );
+  position: relative;
+  isolation: isolate;
+}
+.border-glow-halo,
+.border-glow-ring,
+.border-glow-bleed {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--glow-edge);
+  transition: opacity 0.35s ease;
+}
+/* Sharp lit arc on the border itself */
+.border-glow-ring {
+  z-index: 3;
+  padding: 1.5px;
+  background: var(--glow-arc);
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* The same arc, blurred, spilling outside the card */
+.border-glow-halo {
+  z-index: -1;
+  inset: -2px;
+  padding: 4px;
+  background: var(--glow-arc);
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  filter: blur(12px);
+}
+/* Soft light bleeding into the card from where the cursor is */
+.border-glow-bleed {
+  z-index: 2;
+  background: radial-gradient(260px circle at var(--glow-x) var(--glow-y), var(--glow-bleed), transparent 70%);
 }
 
 /* Custom scrollbar */

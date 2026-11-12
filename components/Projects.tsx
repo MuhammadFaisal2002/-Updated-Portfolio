@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import Image from 'next/image';
+import BorderGlow from './BorderGlow';
 
 export default function Projects() {
   const projects = [
@@ -71,9 +72,14 @@ export default function Projects() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group relative rounded-xl overflow-hidden border border-primary/20 hover:border-primary/50 transition-all duration-300"
-              style={{ backgroundColor: 'var(--card)' }}
+              className="h-full"
             >
+              {/* The glow wrapper sits outside the card's overflow clip so its halo can spill past the border */}
+              <BorderGlow className="h-full rounded-xl">
+              <div
+                className="group relative h-full rounded-xl overflow-hidden border border-primary/20 transition-colors duration-300"
+                style={{ backgroundColor: 'var(--card)' }}
+              >
               {/* Project image (3:2, matching the artwork) or a gradient until one is added */}
               <div className={`aspect-[3/2] bg-gradient-to-br ${project.color} relative overflow-hidden`}>
                 {project.image ? (
@@ -132,6 +138,8 @@ export default function Projects() {
                   </a>
                 </div>
               </div>
+              </div>
+              </BorderGlow>
             </motion.div>
           ))}
         </div>
