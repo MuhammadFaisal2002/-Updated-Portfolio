@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { Html, Line } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { useTheme, useMediaQuery } from '@/lib/useTheme';
@@ -131,9 +131,18 @@ const TABLET: GraphConfig = {
 };
 
 const PALETTE: Record<'dark' | 'light', Palette> = {
-  dark:  { signal: '#dc143c', node: '#e6e6e6', edge: '#b0485c', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#d6d6d6' },
-  light: { signal: '#dc143c', node: '#2e2e2e', edge: '#8a2436', fog: '#f8f9fa', labelBg: 'rgba(248, 249, 250, 0.8)', labelFg: '#2e2e2e' },
+  dark:  { signal: '#dc143c', node: '#e6e6e6', edge: '#f0607e', fog: '#1a1a1a', labelBg: 'rgba(26, 26, 26, 0.7)',    labelFg: '#d6d6d6' },
+  light: { signal: '#dc143c', node: '#2e2e2e', edge: '#7a0f26', fog: '#f8f9fa', labelBg: 'rgba(248, 249, 250, 0.8)', labelFg: '#2e2e2e' },
 };
+
+/** Link lines between nodes: width in pixels and resting opacity. */
+const EDGE_WIDTH = 1.8;
+const EDGE_OPACITY = 0.9;
+
+/** The part of a drei Line this scene animates each frame. */
+interface EdgeLine {
+  material: { color: THREE.Color; opacity: number };
+}
 
 const HOP_DURATION = 1.2; // seconds per edge — calm, deliberate
 const MONO = "var(--font-geist-mono), 'JetBrains Mono', monospace";
@@ -194,13 +203,8 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
     return map;
   }, [cfg]);
 
-  const edgeGeos = useMemo(
-    () => cfg.edges.map(([a, b]) => {
-      const pa = nodePos[a]!, pb = nodePos[b]!;
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute([pa.x, pa.y, pa.z, pb.x, pb.y, pb.z], 3));
-      return g;
-    }),
+  const edgePoints = useMemo(
+    () => cfg.edges.map(([a, b]) => [nodePos[a]!, nodePos[b]!] as [THREE.Vector3, THREE.Vector3]),
     [cfg, nodePos],
   );
 
@@ -210,7 +214,7 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
 
   const groupRef  = useRef<THREE.Group>(null);
   const meshRefs  = useRef<Record<string, THREE.Mesh>>({});
-  const edgeRefs  = useRef<(THREE.LineSegments | null)[]>([]);
+  const edgeRefs  = useRef<(EdgeLine | null)[]>([]);
   const pulseRefs = useRef<(THREE.Mesh | null)[]>([]);
   const nodeGlow  = useRef<Record<string, number>>({});
   const hoverNode = useRef<string | null>(null);
@@ -245,16 +249,16 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
     cfg.edges.forEach(([a, b], i) => {
       const line = edgeRefs.current[i];
       if (!line) return;
-      const mat = line.material as THREE.LineBasicMaterial;
+      const mat = line.material;
       if (h === null) {
         mat.color.copy(cEdge);
-        mat.opacity = 0.6;
+        mat.opacity = EDGE_OPACITY;
       } else if (a === h || b === h) {
         mat.color.copy(cSignal);
-        mat.opacity = 0.8;
+        mat.opacity = 1;
       } else {
         mat.color.copy(cEdge);
-        mat.opacity = 0.2;
+        mat.opacity = 0.25;
       }
     });
 
@@ -320,10 +324,18 @@ function Graph({ cfg, colors, animate }: { cfg: GraphConfig; colors: Palette; an
 
   return (
     <group ref={groupRef} position={cfg.position} rotation={animate ? [0, 0, 0] : [0.08, 0.25, 0]}>
-      {edgeGeos.map((geo, i) => (
-        <lineSegments key={`edge-${i}`} geometry={geo} ref={(el) => { edgeRefs.current[i] = el; }}>
-          <lineBasicMaterial color={cEdge} transparent opacity={0.6} />
-        </lineSegments>
+      {/* Screen-space lines with real width (WebGL's own lines are always 1px).
+          They are not fogged, so links to the far nodes stay readable. */}
+      {edgePoints.map((points, i) => (
+        <Line
+          key={`edge-${i}`}
+          ref={(el) => { edgeRefs.current[i] = el; }}
+          points={points}
+          color={colors.edge}
+          lineWidth={EDGE_WIDTH}
+          transparent
+          opacity={EDGE_OPACITY}
+        />
       ))}
 
       {cfg.nodes.map((node) => (
