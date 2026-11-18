@@ -2,7 +2,17 @@
 
 The site records one row per visitor in a Google Sheet: time, IP address, city, region, country, device, OS, browser, referrer, landing page, screen size, language, timezone and user agent.
 
-Until the steps below are done nothing is stored. The site works normally either way.
+Without `VISITOR_SHEET_URL` nothing is stored. The site works normally either way.
+
+## Current setup
+
+This is already set up for the live site:
+
+- **Spreadsheet:** `Portfolio Visitors`, rows land in its `Visitors` tab.
+- **Script:** the standalone Apps Script project `Portfolio Visitor Log`, deployed as a web app. It opens the spreadsheet by its ID, so it is not bound to the sheet.
+- **Vercel:** `VISITOR_SHEET_URL` is set for Production.
+
+To change what is recorded, edit the script, then **Deploy → Manage deployments → Edit → New version**. That keeps the same URL, so nothing in Vercel needs to change.
 
 ## What it does and does not capture
 
@@ -11,7 +21,7 @@ Until the steps below are done nothing is stored. The site works normally either
 - **Skipped:** search-engine crawlers, link-preview bots, uptime monitors, and visitors whose browser sends Do Not Track or Global Privacy Control.
 - **De-duplicated:** one row per browser session, and the same IP and browser at most once every 30 minutes.
 
-## Setup (about 5 minutes)
+## Setting it up again from scratch
 
 Use a **new** spreadsheet for this. Do not paste the script into the contact form's spreadsheet: that project already has its own `doPost`, and two would conflict.
 
@@ -28,11 +38,13 @@ Use a **new** spreadsheet for this. Do not paste the script into the contact for
    VISITOR_SHEET_URL=https://script.google.com/macros/s/your_deployment_id/exec
    ```
 
-   Select Production and Preview, then **Redeploy** the site.
+   Select Production, then redeploy the site. Pushing any commit to `main` also redeploys it.
 
 Keep this URL private. Anyone who has it can add rows to the sheet. It is a server-only variable, so the site never sends it to browsers.
 
 ## The script
+
+This version is for a script created from inside the spreadsheet. The deployed one is the same except that it uses `SpreadsheetApp.openById('<spreadsheet id>')` instead of `getActiveSpreadsheet()`.
 
 ```javascript
 const SHEET_NAME = 'Visitors';
