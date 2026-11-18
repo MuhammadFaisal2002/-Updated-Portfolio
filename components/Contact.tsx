@@ -4,6 +4,7 @@ import { Mail, MapPin, Phone } from 'lucide-react';
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
 import ContactFormCard, { type ContactFormData, type ContactStatus } from './ContactFormCard';
+import { linkContactToVisit } from '@/lib/visitorClient';
 
 export default function Contact() {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -72,6 +73,9 @@ export default function Contact() {
 
       // Send to Google Sheets (non-blocking)
       sendToGoogleSheets(formData);
+
+      // Put a name to this visitor's row in the visitor log (non-blocking)
+      linkContactToVisit({ name: formData.name, email: formData.email });
 
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });

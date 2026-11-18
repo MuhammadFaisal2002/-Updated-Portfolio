@@ -1,15 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import { visitorLoggingAllowed } from '@/lib/visitorClient';
 
 const SESSION_FLAG = 'visit-logged';
 /** Wait a moment so prefetches and instant bounces are not counted as visits. */
 const SEND_DELAY_MS = 1500;
-
-interface PrivacySignals {
-  doNotTrack?: string | null;
-  globalPrivacyControl?: boolean;
-}
 
 /**
  * Tells the server about this visit, once per browser session. The server adds
@@ -20,8 +16,7 @@ interface PrivacySignals {
  */
 export default function VisitorBeacon() {
   useEffect(() => {
-    const signals = navigator as Navigator & PrivacySignals;
-    if (signals.doNotTrack === '1' || signals.globalPrivacyControl === true) return;
+    if (!visitorLoggingAllowed()) return;
 
     try {
       if (sessionStorage.getItem(SESSION_FLAG)) return;
