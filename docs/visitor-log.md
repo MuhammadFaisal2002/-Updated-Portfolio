@@ -12,6 +12,8 @@ This is already set up for the live site:
 - **Script:** the standalone Apps Script project `Portfolio Visitor Log`, deployed as a web app. It opens the spreadsheet by its ID, so it is not bound to the sheet.
 - **Vercel:** `VISITOR_SHEET_URL` is set for Production.
 
+The script also has a `setupSheet` function. Running it from the editor (choose `setupSheet`, press Run) formats the `Visitors` tab and rebuilds the `Dashboard` tab, which shows totals and breakdowns by country, device, browser and referrer. It is safe to run again and does not affect the deployed web app.
+
 To change what is recorded, edit the script, then **Deploy → Manage deployments → Edit → New version**. That keeps the same URL, so nothing in Vercel needs to change.
 
 ## What it does and does not capture
