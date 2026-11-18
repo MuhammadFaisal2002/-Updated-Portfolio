@@ -39,6 +39,9 @@ export default function Home() {
 
           <footer className="py-8 text-center border-t border-primary/20" style={{ backgroundColor: 'var(--card-glass)', color: 'var(--foreground)' }}>
             <p className="opacity-70">Created By <span className="text-primary font-medium">MF-DEVELOPER</span> &copy; {new Date().getFullYear()}</p>
+            <p className="text-xs opacity-50 mt-2 px-4">
+              This site logs visits (IP address, approximate location, device and referrer) for analytics and security.
+            </p>
           </footer>
         </div>
         <ScrollToTop />

@@ -86,6 +86,9 @@ GITHUB_TOKEN=your_github_token
 # ElevenLabs voice assistant (see docs/elevenlabs-agent.md)
 ELEVENLABS_AGENT_ID=your_agent_id
 ELEVENLABS_API_KEY=your_elevenlabs_api_key
+
+# Visitor log (optional; see docs/visitor-log.md). Server-only, keep it private.
+VISITOR_SHEET_URL=https://script.google.com/macros/s/your_deployment_id/exec
 ```
 
 ### **How to Add Environment Variables:**
